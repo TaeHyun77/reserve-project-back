@@ -49,7 +49,7 @@ class LoginFilter(
         val name = userDetails.getName()
         val email = userDetails.getEmail()
         val password = userDetails.password
-        val role = authentication.authorities.first().authority // "USER" 이런 식임
+        val role = authentication.authorities.first().authority
 
         val accessToken = jwtUtil.createToken(username, password, name, email, role,"access", 30 * 60 * 1000)
         val refresh = jwtUtil.createToken(username, password, name, email, role,"refresh", 60 * 60 * 1000)
