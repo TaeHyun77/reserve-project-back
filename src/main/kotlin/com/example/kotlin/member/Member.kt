@@ -18,7 +18,7 @@ class Member(
 
     val name: String,
 
-    val role: Role? = null,
+    val role: Role,
 
     val email: String
 ): BaseTime()
