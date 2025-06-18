@@ -13,11 +13,11 @@ data class MemberRequest (
 ) {
     fun toEntity(password: String): Member {
         return Member(
-            username = username.username,
+            username = this.username.username,
             password = password,
-            name = name,
-            role = role,
-            email = email
+            name = this.name,
+            role = this.role,
+            email = this.email
         )
     }
 }
