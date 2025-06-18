@@ -1,2 +1,2 @@
-# kotlin-project-back
-코틀린 프로젝트
+# reserve-project-back
+예매 시스템입니다.
