@@ -6,8 +6,6 @@ data class MemberResponse(
 
     val username: String,
 
-    val password: String? = null,
-
     val name: String,
 
     val role: Role,

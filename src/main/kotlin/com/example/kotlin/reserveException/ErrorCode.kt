@@ -13,6 +13,14 @@ enum class ErrorCode (
 
     IS_NOT_ACCESSTOKEN("IS_NOT_ACCESSTOKEN", "JWT 토큼이 아닙니다."),
 
-    MEMBER_NOT_FOUND("MEMBER_NOT_FOUND", "사용자를 찾을 수 없습니다.")
+    MEMBER_NOT_FOUND("MEMBER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
+
+    PLACE_NOT_FOUND("PLACE_NOT_FOUND", "장소를 찾을 수 없습니다."),
+
+    PERFORMANCE_NOT_FOUND("PERFORMANCE_NOT_FOUND", "공연을 찾을 수 없습니다."),
+
+    SCREEN_INFO_NOT_FOUND("SCREEN_INFO_NOT_FOUND", "상영 정보를 찾을 수 없습니다."),
+
+    FAIL_TO_SAVE_DATA("FAIL_TO_SAVE_DATA", "데이터 저장 실패")
 
 }

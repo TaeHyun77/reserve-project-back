@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class MemberService(
@@ -38,9 +39,14 @@ class MemberService(
         return ResponseEntity.ok(result)
     }
 
+    @Transactional
     fun saveMember(memberRequest: MemberRequest) {
         val encodedPassword = passwordEncoder.encode(memberRequest.password)
 
-        memberRepository.save(memberRequest.toEntity(encodedPassword))
+        try {
+            memberRepository.save(memberRequest.toEntity(encodedPassword))
+        } catch (e: ReserveException) {
+            throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.FAIL_TO_SAVE_DATA)
+        }
     }
 }
