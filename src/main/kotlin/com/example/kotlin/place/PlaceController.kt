@@ -1,5 +1,6 @@
 package com.example.kotlin.place
 
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -16,6 +17,10 @@ class PlaceController(
         placeService.registerPlace(placeRequest)
     }
 
+    @GetMapping("/list")
+    fun placeAllInfo(): List<PlaceResponse> {
+        return placeService.placeAllInfo()
+    }
 }
 
 data class PlaceRequest(
