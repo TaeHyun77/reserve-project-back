@@ -13,12 +13,21 @@ class PlaceService(
 
     @Transactional
     fun registerPlace(placeRequest: PlaceRequest) {
-
         try {
             placeRepository.save(placeRequest.toPlace())
         } catch (e: ReserveException) {
             throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.FAIL_TO_SAVE_DATA)
         }
 
+    }
+
+    fun placeAllInfo(): List<PlaceResponse> {
+        return placeRepository.findAll().map { p ->
+            PlaceResponse(
+                id = p.id,
+                name = p.name,
+                location = p.location
+            )
+        }
     }
 }
