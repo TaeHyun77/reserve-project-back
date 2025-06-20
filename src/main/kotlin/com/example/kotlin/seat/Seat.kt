@@ -23,8 +23,7 @@ class Seat(
     val screenInfo: ScreenInfo,
 
     // 좌석은 A1 ~ A5 , B1 ~ B5 까지만 있다고 가정
-    val seatNumber: String,
+    val seatNumber: String?,
 
-    val is_reserved: Boolean
-) {
-}
+    var is_reserved: Boolean?
+)

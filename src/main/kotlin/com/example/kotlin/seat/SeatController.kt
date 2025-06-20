@@ -1,6 +1,10 @@
 package com.example.kotlin.seat
 
 import com.example.kotlin.screenInfo.ScreenInfo
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -12,26 +16,29 @@ class SeatController(
     private val seatService: SeatService
 ) {
 
-    @PostMapping("/register")
-    fun registerSeat(@RequestBody seatRequest: SeatRequest) {
-        seatService.registerSeat(seatRequest)
+    @PostMapping("/init")
+    fun initSeats(@RequestBody seatRequest: SeatRequest) {
+        seatService.initSeats(seatRequest)
     }
 
-}
+    @GetMapping("/list/{placeId}/{performanceId}")
+    fun seatList(
+        @PathVariable("placeId") placeId: Long,
+        @PathVariable("performanceId") performanceId: Long): List<SeatResponse> {
 
-data class SeatRequest(
+        return seatService.seatList(placeId, performanceId)
+    }
 
-    val screenInfoId: Long,
+    @PostMapping("/reserve")
+    fun reserveSeats(@RequestBody seatsInfo: SeatRequest): ResponseEntity<String> {
 
-    val seatNumber: String,
+        return seatService.reserveSeats(seatsInfo)
+    }
 
-    val is_reserved: Boolean = true
-) {
-    fun toSeat(screenInfo: ScreenInfo): Seat {
-        return Seat (
-            screenInfo = screenInfo,
-            seatNumber = this.seatNumber,
-            is_reserved = this.is_reserved
-        )
+    @DeleteMapping("/delete/{seatId}")
+    fun deleteSeat(@PathVariable("seatId") seatId: Long) {
+        seatService.deleteSeat(seatId)
     }
 }
+
+
