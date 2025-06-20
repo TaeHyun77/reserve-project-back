@@ -21,6 +21,12 @@ enum class ErrorCode (
 
     SCREEN_INFO_NOT_FOUND("SCREEN_INFO_NOT_FOUND", "상영 정보를 찾을 수 없습니다."),
 
-    FAIL_TO_SAVE_DATA("FAIL_TO_SAVE_DATA", "데이터 저장 실패")
+    SEAT_NOT_FOUND("SEAT_NOT_FOUND", "좌석 정보를 찾을 수 없습니다."),
+
+    SEAT_ALREADY_RESERVED("SEAT_ALREADY_RESERVED", "이미 예약된 좌석입니다."),
+
+    FAIL_TO_SAVE_DATA("FAIL_TO_SAVE_DATA", "데이터 저장 실패"),
+
+    FAIL_TO_RETURN_RESERVED_SEAT_LIST("FAIL_TO_RETURN_RESERVED_SEAT_LIST", "예약 좌석 리스트 반환 실해")
 
 }
