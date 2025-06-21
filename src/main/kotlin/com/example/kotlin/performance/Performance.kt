@@ -19,4 +19,6 @@ class Performance(
     val title: String,
 
     val duration: String,
+
+    var price: Long
 )

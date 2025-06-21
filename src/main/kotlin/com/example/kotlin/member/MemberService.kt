@@ -20,13 +20,8 @@ class MemberService(
 
         val username = jwtUtil.getUsername(token)
 
-        val member: Member
-
-        try {
-            member = memberRepository.findByUsername(username)
-        } catch (e: ReserveException) {
-            throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.MEMBER_NOT_FOUND)
-        }
+        val member = memberRepository.findByUsername(username)
+            ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.MEMBER_NOT_FOUND)
 
         val result = MemberResponse(
             id = member.id,

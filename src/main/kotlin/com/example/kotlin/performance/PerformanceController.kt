@@ -34,13 +34,16 @@ data class PerformanceRequest(
 
     val title: String,
 
-    val duration: String
+    val duration: String,
+
+    val price: Long
 ) {
     fun toPerformance(): Performance {
         return Performance (
             type = this.type,
             title = this.title,
-            duration = this.duration
+            duration = this.duration,
+            price = this.price
         )
     }
 }

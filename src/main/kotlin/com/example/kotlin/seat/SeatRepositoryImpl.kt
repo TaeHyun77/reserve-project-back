@@ -1,7 +1,6 @@
 package com.example.kotlin.seat
 
 import com.example.kotlin.screenInfo.QScreenInfo
-import com.example.kotlin.screenInfo.ScreenInfo
 import com.querydsl.jpa.impl.JPAQueryFactory
 
 class SeatRepositoryImpl(
@@ -22,7 +21,7 @@ class SeatRepositoryImpl(
             .fetch()
     }
 
-    override fun findByScreenInfoAndSeatNumber(screenInfoId: Long, seatNumber: String): Seat? {
+    override fun findByScreenInfoAndSeatNumber(screenInfoId: Long?, seatNumber: String): Seat? {
         val seat = QSeat.seat
 
         return queryFactory
