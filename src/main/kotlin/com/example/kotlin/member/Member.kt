@@ -20,5 +20,7 @@ class Member(
 
     val role: Role,
 
-    val email: String
+    val email: String,
+
+    val credit: Long = 30000
 ): BaseTime()

@@ -8,6 +8,7 @@ data class ErrorCodeDto(
     val detail: String?
 ) {
     companion object {
+
         fun toException(ex: ReserveException): ResponseEntity<ErrorCodeDto> {
             val errorType: ErrorCode = ex.errorCode
             val detail: String? = ex.details

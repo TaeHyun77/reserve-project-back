@@ -1,5 +1,8 @@
 package com.example.kotlin.seat
 
+import com.example.kotlin.jwt.JwtUtil
+import com.example.kotlin.member.MemberRepository
+import com.example.kotlin.performance.PerformanceRepository
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
 import com.example.kotlin.screenInfo.ScreenInfo
@@ -15,9 +18,13 @@ private val log = KotlinLogging.logger {}
 @Service
 class SeatService(
     private val seatRepository: SeatRepository,
-    private val screenInfoRepository: ScreenInfoRepository
+    private val screenInfoRepository: ScreenInfoRepository,
+    private val memberRepository: MemberRepository,
+    private val performanceRepository: PerformanceRepository,
+    private val jwtUtil: JwtUtil,
 ) {
 
+    @Transactional
     fun initSeats(seatRequest: SeatRequest) {
 
         val screenInfo: ScreenInfo = screenInfoRepository.findById(seatRequest.screenInfoId)
@@ -34,7 +41,6 @@ class SeatService(
                     is_reserved = false,
                     screenInfo = screenInfo
                 )
-
                 seats.add(seat)
             }
         }
@@ -42,23 +48,42 @@ class SeatService(
         seatRepository.saveAll(seats)
     }
 
+    /*
+    * 특정 영화관의 영화 예매
+    * */
     @Transactional
-    fun reserveSeats(seatsIfo: SeatRequest): ResponseEntity<String> {
+    fun reserveSeats(seatsIfo: SeatRequest, token: String): ResponseEntity<String> {
+
+        val username = jwtUtil.getUsername(token)
+
+        val member = memberRepository.findByUsername(username)
+            ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.MEMBER_NOT_FOUND)
+
+        log.info { "member name : ${member.name}" }
 
         val updatedSeats = mutableListOf<Seat>()
 
         val screenInfo = screenInfoRepository.findScreenInfoByPlaceIdAndPerformanceId(seatsIfo.placeId, seatsIfo.performanceId)
             ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.SCREEN_INFO_NOT_FOUND)
 
-        seatsIfo.seats?.forEach { seatNumber ->
+        val totalSeatCount = (seatsIfo.seats as List<String>).size
 
-            val seat = seatRepository.findByScreenInfoAndSeatNumber(screenInfo, seatNumber)
+        if ((screenInfo.performance.price * totalSeatCount) > member.credit ) {
+            log.info { "사용자의 보유 금액이 부족합니다." }
+            throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_ENOUGH_CREDIT)
+        }
+
+
+        seatsIfo.seats.forEach { seatNumber ->
+
+            val seat = seatRepository.findByScreenInfoAndSeatNumber(screenInfo.id, seatNumber)
                 ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.SEAT_NOT_FOUND)
 
             if (seat.is_reserved == true) {
                 throw ReserveException(HttpStatus.CONFLICT, ErrorCode.SEAT_ALREADY_RESERVED)
             } else {
                 seat.is_reserved = true
+                seat.member = member
             }
 
             updatedSeats.add(seat)
@@ -69,6 +94,9 @@ class SeatService(
         return ResponseEntity.ok("좌석 예약이 완료되었습니다.")
     }
 
+    /*
+    * 특정 영화관에서 상영 중인 영화의 좌석 목록 조회
+    * */
     fun seatList(placeId: Long, performanceId: Long): List<SeatResponse> {
 
         try {
@@ -86,6 +114,17 @@ class SeatService(
         }
     }
 
+    fun seatPrice(performanceId: Long): Long {
+
+        val performance = performanceRepository.findById(performanceId)
+            .orElseThrow{throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.PERFORMANCE_NOT_FOUND) }
+
+        return performance.price
+    }
+
+    /*
+    * 좌석 삭제
+    * */
     @Transactional
     fun deleteSeat(seatId: Long) {
 

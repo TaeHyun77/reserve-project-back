@@ -27,6 +27,7 @@ enum class ErrorCode (
 
     FAIL_TO_SAVE_DATA("FAIL_TO_SAVE_DATA", "데이터 저장 실패"),
 
-    FAIL_TO_RETURN_RESERVED_SEAT_LIST("FAIL_TO_RETURN_RESERVED_SEAT_LIST", "예약 좌석 리스트 반환 실해")
+    FAIL_TO_RETURN_RESERVED_SEAT_LIST("FAIL_TO_RETURN_RESERVED_SEAT_LIST", "예약 좌석 리스트 반환 실패"),
 
+    NOT_ENOUGH_CREDIT("NOT_ENOUGH_CREDIT", "보유 금액이 부족합니다.")
 }

@@ -1,5 +1,6 @@
 package com.example.kotlin.seat
 
+import com.example.kotlin.member.Member
 import com.example.kotlin.screenInfo.ScreenInfo
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -9,6 +10,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToOne
 
 @Entity
 class Seat(
@@ -21,6 +23,10 @@ class Seat(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "screen_id")
     val screenInfo: ScreenInfo,
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    var member: Member? = null,
 
     // 좌석은 A1 ~ A5 , B1 ~ B5 까지만 있다고 가정
     val seatNumber: String?,
