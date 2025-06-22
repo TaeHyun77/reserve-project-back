@@ -1,5 +1,7 @@
 package com.example.kotlin.member
 
+import java.time.LocalDate
+
 data class MemberResponse(
 
     val id: Long? = null,
@@ -10,5 +12,7 @@ data class MemberResponse(
 
     val role: Role,
 
-    val email: String
+    val email: String,
+
+    var last_reward_date: LocalDate?
 )

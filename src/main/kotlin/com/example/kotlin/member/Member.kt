@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import java.time.LocalDate
 
 @Entity
 class Member(
@@ -22,5 +23,9 @@ class Member(
 
     val email: String,
 
-    val credit: Long = 30000
+    var credit: Long = 30000,
+
+    var reward: Long,
+
+    var last_reward_date: LocalDate? = null
 ): BaseTime()

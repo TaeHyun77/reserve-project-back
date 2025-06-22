@@ -29,5 +29,9 @@ enum class ErrorCode (
 
     FAIL_TO_RETURN_RESERVED_SEAT_LIST("FAIL_TO_RETURN_RESERVED_SEAT_LIST", "예약 좌석 리스트 반환 실패"),
 
-    NOT_ENOUGH_CREDIT("NOT_ENOUGH_CREDIT", "보유 금액이 부족합니다.")
+    NOT_ENOUGH_CREDIT("NOT_ENOUGH_CREDIT", "보유 금액이 부족합니다."),
+
+    NOT_EXIST_AUTHORIZATION_IN_HEADER("NOT_EXIST_AUTHORIZATION_IN_HEADER", "Header에 Authorization이 존재하지 않습니다."),
+
+    REWARD_ALREADY_CLAIMED("REWARD_ALREADY_CLAIMED", "오늘 이미 리워드를 지급받았습니다.")
 }

@@ -67,12 +67,12 @@ class SeatService(
             ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.SCREEN_INFO_NOT_FOUND)
 
         val totalSeatCount = (seatsIfo.seats as List<String>).size
+        val totalPrice = screenInfo.performance.price * totalSeatCount
 
-        if ((screenInfo.performance.price * totalSeatCount) > member.credit ) {
+        if (totalPrice > member.credit ) {
             log.info { "사용자의 보유 금액이 부족합니다." }
             throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_ENOUGH_CREDIT)
         }
-
 
         seatsIfo.seats.forEach { seatNumber ->
 
@@ -84,11 +84,13 @@ class SeatService(
             } else {
                 seat.is_reserved = true
                 seat.member = member
+                member.credit -= totalPrice
             }
 
             updatedSeats.add(seat)
         }
 
+        memberRepository.save(member)
         seatRepository.saveAll(updatedSeats)
         log.info { "예약 성공 !" }
         return ResponseEntity.ok("좌석 예약이 완료되었습니다.")

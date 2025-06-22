@@ -3,11 +3,13 @@ package com.example.kotlin.member
 import com.example.kotlin.jwt.JwtUtil
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 @Service
 class MemberService(
@@ -28,7 +30,8 @@ class MemberService(
             username = member.username,
             name = member.name,
             role = member.role,
-            email = member.email
+            email = member.email,
+            last_reward_date = member.last_reward_date
         )
 
         return ResponseEntity.ok(result)
@@ -43,5 +46,25 @@ class MemberService(
         } catch (e: ReserveException) {
             throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.FAIL_TO_SAVE_DATA)
         }
+    }
+
+    @Transactional
+    fun setRewardDate(token: String, today: LocalDate): ResponseEntity<String> {
+
+        val username = jwtUtil.getUsername(token)
+
+        val member = memberRepository.findByUsername(username)
+            ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.MEMBER_NOT_FOUND)
+
+        if (member.last_reward_date == null || member.last_reward_date != today) {
+            member.last_reward_date = today
+            member.reward += 200
+        } else {
+            throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.REWARD_ALREADY_CLAIMED)
+        }
+
+        memberRepository.save(member)
+
+        return ResponseEntity.ok("ok")
     }
 }

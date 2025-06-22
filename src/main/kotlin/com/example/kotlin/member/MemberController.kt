@@ -1,13 +1,15 @@
 package com.example.kotlin.member
 
+import com.example.kotlin.config.parsingToken
 import jakarta.servlet.http.HttpServletRequest
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @RequestMapping("/member")
 @RestController
@@ -19,14 +21,7 @@ class MemberController(
     @GetMapping("/info")
     fun memberInfo(request: HttpServletRequest): ResponseEntity<MemberResponse> {
 
-        val authorization = request.getHeader("Authorization")
-            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
-
-        if (!authorization.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
-        }
-
-        val token = authorization.substring(7)
+        val token = parsingToken(request)
 
         return memberService.memberInfo(token)
     }
@@ -35,4 +30,15 @@ class MemberController(
     fun saveMember(@RequestBody memberRequest: MemberRequest) {
         memberService.saveMember(memberRequest)
     }
+
+    @PostMapping("/reward/{today}")
+    fun setRewardDate(request: HttpServletRequest, @PathVariable("today") today: LocalDate): ResponseEntity<String> {
+
+        val token: String = parsingToken(request)
+
+        println("받은 날짜: $today")
+
+        return memberService.setRewardDate(token, today)
+    }
 }
+
