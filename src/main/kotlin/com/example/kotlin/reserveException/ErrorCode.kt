@@ -39,7 +39,11 @@ enum class ErrorCode (
 
     NOT_EXIST_IDEMPOTENCY_KEY("NOT_EXIST_IDEMPOTENCY_KEY", "Idempotency-Key 정보를 찾을 수 없습니다."),
 
-    CANNOT_DELETE_SOME_SCREENING_HAVE_NOT_YET_ENDED("CANNOT_DELETE_SOME_SCREENING_HAVE_NOT_YET_ENDED", "아직 종료되지 않은 상영 정보가 있어 삭제할 수 없습니다.")
+    CANNOT_DELETE_SOME_SCREENING_HAVE_NOT_YET_ENDED("CANNOT_DELETE_SOME_SCREENING_HAVE_NOT_YET_ENDED", "아직 종료되지 않은 상영 정보가 있어 삭제할 수 없습니다."),
+
+    INVALID_USERNAME("INVALID_USERNAME", "유효하지 않은 username 값 입니다."),
+
+    DUPLICATED_USERNAME("DUPLICATED_USERNAME", "중복된 username 값 입니다.")
 
 
 }

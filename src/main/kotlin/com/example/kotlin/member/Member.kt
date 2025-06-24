@@ -1,6 +1,7 @@
 package com.example.kotlin.member
 
 import com.example.kotlin.BaseTime
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -13,6 +14,7 @@ class Member(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
+    @Column(unique = true)
     val username: String,
 
     val password: String,
