@@ -2,6 +2,7 @@ package com.example.kotlin.seat
 
 import com.example.kotlin.member.Member
 import com.example.kotlin.screenInfo.ScreenInfo
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -24,7 +25,7 @@ class Seat(
     @JoinColumn(name = "screen_id")
     val screenInfo: ScreenInfo,
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     var member: Member? = null,
 

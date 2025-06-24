@@ -1,19 +1,24 @@
 package com.example.kotlin.seat
 
+import com.example.kotlin.config.Loggable
+import com.example.kotlin.idempotency.Idempotency
+import com.example.kotlin.idempotency.IdempotencyRepository
 import com.example.kotlin.jwt.JwtUtil
 import com.example.kotlin.member.MemberRepository
 import com.example.kotlin.performance.PerformanceRepository
+import com.example.kotlin.performance.PerformanceResponse
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
 import com.example.kotlin.screenInfo.ScreenInfo
 import com.example.kotlin.screenInfo.ScreenInfoRepository
+import com.example.kotlin.screenInfo.ScreenInfoResponse
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-
-private val log = KotlinLogging.logger {}
+import java.time.LocalDateTime
 
 @Service
 class SeatService(
@@ -22,7 +27,10 @@ class SeatService(
     private val memberRepository: MemberRepository,
     private val performanceRepository: PerformanceRepository,
     private val jwtUtil: JwtUtil,
-) {
+    private val idempotencyRepository: IdempotencyRepository,
+    private val objectMapper: ObjectMapper,
+
+    ): Loggable {
 
     @Transactional
     fun initSeats(seatRequest: SeatRequest) {
@@ -41,6 +49,7 @@ class SeatService(
                     is_reserved = false,
                     screenInfo = screenInfo
                 )
+
                 seats.add(seat)
             }
         }
@@ -48,66 +57,103 @@ class SeatService(
         seatRepository.saveAll(seats)
     }
 
-    /*
-    * 특정 영화관의 영화 예매
-    * */
     @Transactional
-    fun reserveSeats(seatsIfo: SeatRequest, token: String): ResponseEntity<String> {
+    fun reserveSeats(seatRequest: SeatRequest, token: String, idempotencyKey: String): ResponseEntity<String> {
+        return checkIdempotencyOrProceed(idempotencyKey, "/seat/reserve", "POST") {
+            doReserveSeats(seatRequest, token)
+        }
+    }
 
+    fun checkIdempotencyOrProceed(
+        idempotencyKey: String, url: String, method: String, process: () -> String
+    ): ResponseEntity<String> {
+
+        val idempotency = idempotencyRepository.findByIdempotencyKey(idempotencyKey)
+
+        val now = LocalDateTime.now()
+
+        // 최초 요청이 아닌 경우 + idempotency의 유효기간이 지나지 않은 경우
+        if (idempotency != null && idempotency.expires_at.isBefore(now)) {
+            log.info { "이전 Idempotent 요청 감지됨 - 이전 응답 반환" }
+
+            return ResponseEntity.ok(idempotency.responseBody)
+        }
+
+        // 최초 요청인 경우 예매 로직 실행 → 예매 로직의 응답 값을 Idempotency의 응답 데이터로 설정함
+        val result = process()
+
+        val newIdempotency = Idempotency(
+            idempotencyKey = idempotencyKey,
+            url = url,
+            httpMethod = method,
+            responseBody = objectMapper.writeValueAsString(result),
+            expires_at = LocalDateTime.now().plusMinutes(10)
+        )
+
+        idempotencyRepository.save(newIdempotency)
+
+        return ResponseEntity.ok(result)
+    }
+
+    @Transactional
+    fun doReserveSeats(seatRequest: SeatRequest, token: String): String {
         val username = jwtUtil.getUsername(token)
 
         val member = memberRepository.findByUsername(username)
             ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.MEMBER_NOT_FOUND)
 
-        log.info { "member name : ${member.name}" }
+        val screenInfo = screenInfoRepository.findById(seatRequest.screenInfoId)
+            .orElseThrow { throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.SCREEN_INFO_NOT_FOUND) }
 
-        val updatedSeats = mutableListOf<Seat>()
-
-        val screenInfo = screenInfoRepository.findScreenInfoByPlaceIdAndPerformanceId(seatsIfo.placeId, seatsIfo.performanceId)
-            ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.SCREEN_INFO_NOT_FOUND)
-
-        val totalSeatCount = (seatsIfo.seats as List<String>).size
+        val totalSeatCount = (seatRequest.seats as List<String>).size
         val totalPrice = screenInfo.performance.price * totalSeatCount
 
-        if (totalPrice > member.credit ) {
-            log.info { "사용자의 보유 금액이 부족합니다." }
+        if (totalPrice > member.credit) {
             throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_ENOUGH_CREDIT)
         }
 
-        seatsIfo.seats.forEach { seatNumber ->
-
+        seatRequest.seats.forEach { seatNumber ->
             val seat = seatRepository.findByScreenInfoAndSeatNumber(screenInfo.id, seatNumber)
                 ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.SEAT_NOT_FOUND)
 
             if (seat.is_reserved == true) {
                 throw ReserveException(HttpStatus.CONFLICT, ErrorCode.SEAT_ALREADY_RESERVED)
-            } else {
-                seat.is_reserved = true
-                seat.member = member
-                member.credit -= totalPrice
             }
 
-            updatedSeats.add(seat)
+            seat.is_reserved = true
+            seat.member = member
+            seatRepository.save(seat)
         }
 
+        member.credit -= totalPrice
         memberRepository.save(member)
-        seatRepository.saveAll(updatedSeats)
-        log.info { "예약 성공 !" }
-        return ResponseEntity.ok("좌석 예약이 완료되었습니다.")
+
+        log.info { "예약 성공!" }
+        return "좌석 예약이 완료되었습니다."
     }
 
     /*
     * 특정 영화관에서 상영 중인 영화의 좌석 목록 조회
     * */
-    fun seatList(placeId: Long, performanceId: Long): List<SeatResponse> {
-
+    fun seatList(screenInfoId: Long): List<SeatResponse> {
         try {
-            val seats = seatRepository.findSeatByPlaceIdAndPerformanceId(placeId, performanceId)
+            val seats = seatRepository.findSeatByPlaceIdAndPerformanceId(screenInfoId)
 
             return seats.map {
                 SeatResponse (
                     seatNumber = it.seatNumber,
-                    is_reserved = it.is_reserved
+                    is_reserved = it.is_reserved,
+                    screenInfo = ScreenInfoResponse(
+                        performance = PerformanceResponse(
+                            type = it.screenInfo.performance.type,
+                            title = it.screenInfo.performance.title,
+                            duration = it.screenInfo.performance.duration,
+                            price = it.screenInfo.performance.price
+                        ),
+                        screeningDate = it.screenInfo.screeningDate,
+                        startTime = it.screenInfo.startTime,
+                        endTime = it.screenInfo.endTime
+                    )
                 )
             }
         } catch(e: ReserveException) {

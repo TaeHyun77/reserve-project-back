@@ -1,11 +1,13 @@
 package com.example.kotlin.performance
 
+import com.example.kotlin.place.Place
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 private val log = KotlinLogging.logger {}
 
@@ -23,18 +25,54 @@ class PerformanceService(
         }
     }
 
+    @Transactional
+    fun deletePerformance(performanceId: Long) {
+
+        val performance = performanceRepository.findById(performanceId)
+            .orElseThrow { throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.PERFORMANCE_NOT_FOUND) }
+
+        val now = LocalDateTime.now()
+
+        val deletableScreenInfos = performance.screenInfoList.filter {
+            it.endTime.isBefore(now)
+        }
+
+        // 남아 있는 screenInfo가 있으면 삭제 금지
+        if (performance.screenInfoList.size != deletableScreenInfos.size) {
+            throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.CANNOT_DELETE_SOME_SCREENING_HAVE_NOT_YET_ENDED)
+        }
+
+        performanceRepository.delete(performance)
+        log.info { "performance 삭제 완료" }
+    }
+
     fun performanceList(placeId: Long): List<PerformanceResponse> {
+
         val performances = performanceRepository.findPerformancesByPlaceId(placeId)
 
-        log.info { performances[0].type }
-
-        return performances.map {
+        return performances.map { performance ->
             PerformanceResponse(
-                id = it.id,
-                type = it.type,
-                title = it.title,
-                duration = it.duration
+                id = performance.id,
+                type = performance.type,
+                title = performance.title,
+                duration = performance.duration,
+                price = performance.price,
+                screenInfoList = performance.screenInfoList.map { screenInfo ->
+                    ScreenInfoListResponse(
+                        placeId = screenInfo.place.id,
+                        performanceId = screenInfo.performance.id,
+                        startTime = screenInfo.startTime
+                    )
+                }
             )
         }
     }
 }
+
+data class ScreenInfoListResponse(
+    val placeId: Long?,
+
+    val performanceId: Long?,
+
+    val startTime: LocalDateTime
+)
