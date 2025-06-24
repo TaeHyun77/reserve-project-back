@@ -17,7 +17,7 @@ class MemberController(
     private val memberService: MemberService,
 ) {
 
-    // 사용자 정보 조회
+    // 로그인 사용자 정보 조회
     @GetMapping("/info")
     fun memberInfo(request: HttpServletRequest): ResponseEntity<MemberResponse> {
 
@@ -26,16 +26,23 @@ class MemberController(
         return memberService.memberInfo(token)
     }
 
+    // 사용자 회원가입
     @PostMapping("/save")
     fun saveMember(@RequestBody memberRequest: MemberRequest) {
         memberService.saveMember(memberRequest)
     }
 
+    // 아이디 검증 로직
+    @GetMapping("/check/validation/{username}")
+    fun checkUsername(@PathVariable("username") username: CheckUsername): ResponseEntity<UsernameCheckResponse> {
+        return memberService.checkUsername(username)
+    }
+
+    // 하루 한 번 리워드 지급 로직
     @PostMapping("/reward/{today}")
     fun setRewardDate(request: HttpServletRequest, @PathVariable("today") today: LocalDate): ResponseEntity<String> {
 
         val token: String = parsingToken(request)
-
         println("받은 날짜: $today")
 
         return memberService.setRewardDate(token, today)

@@ -46,7 +46,7 @@ data class ScreenInfoRequest(
             performance = performance,
             screeningDate = this.screeningDate,
             startTime = this.startTime,
-            endTime = this.startTime
+            endTime = this.endTime
         )
     }
 }

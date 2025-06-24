@@ -1,15 +1,17 @@
 package com.example.kotlin.member
 
+import com.example.kotlin.config.Loggable
+import com.example.kotlin.reserveException.ErrorCode
+import com.example.kotlin.reserveException.ReserveException
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.http.HttpStatus
 import kotlin.text.contains
 import kotlin.text.replace
 import kotlin.text.toRegex
 
-private val log = KotlinLogging.logger {}
 
 @JvmInline
 @JsonDeserialize(using = CheckUsernameDeserializer::class) // 커스텀 역직렬화 지정
@@ -28,13 +30,13 @@ value class CheckUsername private constructor (val username: String) {
 
     private fun validateUsername(username: String) {
         require(USERNAME_REGEX.matchEntire(username) != null) {
-            "유효하지 않은 아이디 형식입니다."
+            throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_USERNAME)
         }
     }
 }
 
 // 커스텀 역직렬화 클래스 정의
-class CheckUsernameDeserializer : JsonDeserializer<CheckUsername>() {
+class CheckUsernameDeserializer : JsonDeserializer<CheckUsername>(), Loggable {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): CheckUsername {
 
         val username = p.valueAsString
