@@ -29,4 +29,3 @@ fun parsingToken(request: HttpServletRequest): String {
 
     return token
 }
-

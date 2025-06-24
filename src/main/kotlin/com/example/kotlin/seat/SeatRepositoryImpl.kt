@@ -1,23 +1,17 @@
 package com.example.kotlin.seat
 
-import com.example.kotlin.screenInfo.QScreenInfo
 import com.querydsl.jpa.impl.JPAQueryFactory
 
 class SeatRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ): SeatRepositoryCustom {
 
-    override fun findSeatByPlaceIdAndPerformanceId(placeId: Long, performanceId: Long): List<Seat> {
+    override fun findSeatByPlaceIdAndPerformanceId(screenInfoId: Long): List<Seat> {
         val seat = QSeat.seat
-        val screen = QScreenInfo.screenInfo
 
         return queryFactory
             .selectFrom(seat)
-            .join(seat.screenInfo, screen)
-            .where(
-                screen.place.id.eq(placeId),
-                screen.performance.id.eq(performanceId)
-            )
+            .where(seat.screenInfo.id.eq(screenInfoId))
             .fetch()
     }
 

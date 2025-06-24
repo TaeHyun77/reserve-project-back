@@ -1,6 +1,11 @@
 package com.example.kotlin.seat
 
+import com.example.kotlin.config.Loggable
+import com.example.kotlin.config.parsingToken
+import com.example.kotlin.reserveException.ErrorCode
+import com.example.kotlin.reserveException.ReserveException
 import com.example.kotlin.screenInfo.ScreenInfo
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -12,11 +17,13 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+private val log = KotlinLogging.logger {}
+
 @RequestMapping("/seat")
 @RestController
 class SeatController(
     private val seatService: SeatService
-) {
+): Loggable {
 
     @PostMapping("/init")
     fun initSeats(@RequestBody seatRequest: SeatRequest) {
@@ -28,28 +35,25 @@ class SeatController(
         return seatService.seatPrice(performanceId)
     }
 
-    @GetMapping("/list/{placeId}/{performanceId}")
+    @GetMapping("/list/{screenInfoId}")
     fun seatList(
-        @PathVariable("placeId") placeId: Long,
-        @PathVariable("performanceId") performanceId: Long
+        @PathVariable("screenInfoId") screenInfoId: Long
     ): List<SeatResponse> {
 
-        return seatService.seatList(placeId, performanceId)
+        return seatService.seatList(screenInfoId)
     }
 
     @PostMapping("/reserve")
     fun reserveSeats(@RequestBody seatsInfo: SeatRequest, request: HttpServletRequest): ResponseEntity<String> {
 
-        val authorization = request.getHeader("Authorization")
-            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+        val token = parsingToken(request)
 
-        if (!authorization.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
-        }
+        val idempotencyKey: String = request.getHeader("Idempotency-key")
+            ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_IN_HEADER_IDEMPOTENCY_KEY)
 
-        val token = authorization.substring(7)
+        log.info { "idempotencyKey : $idempotencyKey" }
 
-        return seatService.reserveSeats(seatsInfo, token)
+        return seatService.reserveSeats(seatsInfo, token, idempotencyKey)
     }
 
     @DeleteMapping("/delete/{seatId}")
