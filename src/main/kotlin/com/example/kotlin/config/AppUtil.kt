@@ -13,7 +13,6 @@ fun createCookie(key: String, value: String): Cookie {
         isHttpOnly = false
         path = "/"
     }
-
 }
 
 fun parsingToken(request: HttpServletRequest): String {

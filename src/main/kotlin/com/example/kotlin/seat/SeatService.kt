@@ -8,6 +8,7 @@ import com.example.kotlin.member.MemberRepository
 import com.example.kotlin.performance.PerformanceRepository
 import com.example.kotlin.performance.PerformanceResponse
 import com.example.kotlin.reserveException.ErrorCode
+import com.example.kotlin.reserveException.ErrorCodeDto
 import com.example.kotlin.reserveException.ReserveException
 import com.example.kotlin.screenInfo.ScreenInfo
 import com.example.kotlin.screenInfo.ScreenInfoRepository
@@ -72,27 +73,52 @@ class SeatService(
 
         val now = LocalDateTime.now()
 
-        // 최초 요청이 아닌 경우 + idempotency의 유효기간이 지나지 않은 경우
-        if (idempotency != null && idempotency.expires_at.isBefore(now)) {
+        // 최초 요청이 아니고, idempotency의 유효기간이 지나지 않은 경우
+        // ⇒ 저장되어 있던 응답을 그대로 반환해야 함, 예매 로직 실행되지 않음
+        if (idempotency != null && idempotency.expires_at.isAfter(now)) {
             log.info { "이전 Idempotent 요청 감지됨 - 이전 응답 반환" }
 
-            return ResponseEntity.ok(idempotency.responseBody)
+            return ResponseEntity
+                .status(idempotency.statusCode)
+                .body(idempotency.responseBody)
         }
 
         // 최초 요청인 경우 예매 로직 실행 → 예매 로직의 응답 값을 Idempotency의 응답 데이터로 설정함
-        val result = process()
+        try {
+            val result = process()
 
-        val newIdempotency = Idempotency(
-            idempotencyKey = idempotencyKey,
-            url = url,
-            httpMethod = method,
-            responseBody = objectMapper.writeValueAsString(result),
-            expires_at = LocalDateTime.now().plusMinutes(10)
-        )
+            val newIdempotency = Idempotency(
+                idempotencyKey = idempotencyKey,
+                url = url,
+                httpMethod = method,
+                responseBody = objectMapper.writeValueAsString(result),
+                statusCode = 200,
+                expires_at = LocalDateTime.now().plusMinutes(10)
+            )
 
-        idempotencyRepository.save(newIdempotency)
+            idempotencyRepository.save(newIdempotency)
 
-        return ResponseEntity.ok(result)
+            return ResponseEntity
+                .status(200)
+                .body(result)
+
+        } catch (e: ReserveException) {
+
+            val failResult = "예약이 실패되었습니다."
+
+            idempotencyRepository.save(
+                Idempotency(
+                    idempotencyKey = idempotencyKey,
+                    url = url,
+                    httpMethod = method,
+                    responseBody = failResult,
+                    statusCode = e.status.value(),
+                    expires_at = LocalDateTime.now().plusMinutes(10)
+                )
+            )
+
+            throw e
+        }
     }
 
     @Transactional
@@ -129,7 +155,7 @@ class SeatService(
         memberRepository.save(member)
 
         log.info { "예약 성공!" }
-        return "좌석 예약이 완료되었습니다."
+        return "이미 처리된 요청이거나, 좌석 예약이 완료되었습니다."
     }
 
     /*
@@ -137,7 +163,7 @@ class SeatService(
     * */
     fun seatList(screenInfoId: Long): List<SeatResponse> {
         try {
-            val seats = seatRepository.findSeatByPlaceIdAndPerformanceId(screenInfoId)
+            val seats = seatRepository.findSeatByPerformanceId(screenInfoId)
 
             return seats.map {
                 SeatResponse (

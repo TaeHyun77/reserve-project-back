@@ -1,6 +1,6 @@
-package com.example.kotlin.place
+package com.example.kotlin.venue
 
-data class PlaceResponse(
+data class VenueResponse(
     val id: Long?,
 
     val name: String,

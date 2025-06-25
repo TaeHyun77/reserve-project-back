@@ -27,10 +27,13 @@ class Idempotency(
     @Column(nullable = false)
     val httpMethod: String,
 
+    val statusCode: Int,
+
+    // 응답 값
     @Column(columnDefinition = "TEXT")
     val responseBody: String? = null,
 
-    // 멱등키 유효 기간
+    // 멱등키 유효 기간 ( 10분으로 설정함 )
     val expires_at: LocalDateTime
 
 ): BaseTime()

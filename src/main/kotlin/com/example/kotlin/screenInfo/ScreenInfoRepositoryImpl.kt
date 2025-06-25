@@ -7,7 +7,7 @@ class ScreenInfoRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ): ScreenInfoRepositoryCustom {
 
-    override fun findScreenInfoByPlaceIdAndPerformanceId(placeId: Long?, performanceId: Long?): ScreenInfoResponse? {
+    override fun findScreenInfoByVenueIdAndPerformanceId(venueId: Long?, performanceId: Long?): ScreenInfoResponse? {
         val screenInfo = QScreenInfo.screenInfo
 
         return queryFactory
@@ -19,14 +19,14 @@ class ScreenInfoRepositoryImpl(
             ))
             .from(screenInfo)
             .where(
-                screenInfo.place.id.eq(placeId),
+                screenInfo.venue.id.eq(venueId),
                 screenInfo.performance.id.eq(performanceId)
             )
             .fetchOne()
     }
 
-    override fun findScreenInfoListByPlaceIdAndPerformanceId(
-        placeId: Long?, performanceId: Long?
+    override fun findScreenInfoListByVenueIdAndPerformanceId(
+        venueId: Long?, performanceId: Long?
     ): List<ScreenInfo>? {
         val screenInfo = QScreenInfo.screenInfo
 
@@ -34,7 +34,7 @@ class ScreenInfoRepositoryImpl(
             .select(screenInfo)
             .from(screenInfo)
             .where(
-                screenInfo.place.id.eq(placeId),
+                screenInfo.venue.id.eq(venueId),
                 screenInfo.performance.id.eq(performanceId)
             )
             .fetch()

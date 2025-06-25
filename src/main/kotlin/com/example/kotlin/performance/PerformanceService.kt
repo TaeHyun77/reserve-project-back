@@ -1,6 +1,5 @@
 package com.example.kotlin.performance
 
-import com.example.kotlin.place.Place
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -46,9 +45,9 @@ class PerformanceService(
         log.info { "performance 삭제 완료" }
     }
 
-    fun performanceList(placeId: Long): List<PerformanceResponse> {
+    fun performanceList(venueId: Long): List<PerformanceResponse> {
 
-        val performances = performanceRepository.findPerformancesByPlaceId(placeId)
+        val performances = performanceRepository.findPerformancesByVenueId(venueId)
 
         return performances.map { performance ->
             PerformanceResponse(
@@ -59,7 +58,7 @@ class PerformanceService(
                 price = performance.price,
                 screenInfoList = performance.screenInfoList.map { screenInfo ->
                     ScreenInfoListResponse(
-                        placeId = screenInfo.place.id,
+                        venueId = screenInfo.venue.id,
                         performanceId = screenInfo.performance.id,
                         startTime = screenInfo.startTime
                     )
@@ -70,7 +69,7 @@ class PerformanceService(
 }
 
 data class ScreenInfoListResponse(
-    val placeId: Long?,
+    val venueId: Long?,
 
     val performanceId: Long?,
 
