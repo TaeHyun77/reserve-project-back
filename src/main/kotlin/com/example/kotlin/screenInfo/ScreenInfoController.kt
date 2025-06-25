@@ -1,8 +1,7 @@
 package com.example.kotlin.screenInfo
 
 import com.example.kotlin.performance.Performance
-import com.example.kotlin.performance.ScreenInfoListResponse
-import com.example.kotlin.place.Place
+import com.example.kotlin.venue.Venue
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -23,30 +22,8 @@ class ScreenInfoController(
         screenInfoService.registerScreen(screenInfoRequest)
     }
 
-    @GetMapping("/list/{placeId}/{performanceId}")
-    fun screenInfoList(@PathVariable("placeId") placeId: Long, @PathVariable("performanceId") performanceId: Long): List<ScreenInfoResponse> {
-        return screenInfoService.screenList(placeId, performanceId)
-    }
-}
-
-data class ScreenInfoRequest(
-    val placeId: Long,
-
-    val performanceId: Long,
-
-    val screeningDate: LocalDate,
-
-    val startTime: LocalDateTime,
-
-    val endTime: LocalDateTime
-) {
-    fun toScreen(place: Place, performance: Performance): ScreenInfo {
-        return ScreenInfo (
-            place = place,
-            performance = performance,
-            screeningDate = this.screeningDate,
-            startTime = this.startTime,
-            endTime = this.endTime
-        )
+    @GetMapping("/list/{venueId}/{performanceId}")
+    fun screenInfoList(@PathVariable("venueId") venueId: Long, @PathVariable("performanceId") performanceId: Long): List<ScreenInfoResponse> {
+        return screenInfoService.screenList(venueId, performanceId)
     }
 }

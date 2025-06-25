@@ -1,4 +1,4 @@
-package com.example.kotlin.place
+package com.example.kotlin.venue
 
 import com.example.kotlin.config.Loggable
 import com.example.kotlin.reserveException.ErrorCode
@@ -7,47 +7,45 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import kotlin.math.log
 
 @Service
-class PlaceService(
-    private val placeRepository: PlaceRepository
+class VenueService(
+    private val venueRepository: VenueRepository
 ): Loggable {
 
     @Transactional
-    fun registerPlace(placeRequest: PlaceRequest) {
+    fun registerVenue(venueRequest: VenueRequest) {
         try {
-            placeRepository.save(placeRequest.toPlace())
+            venueRepository.save(venueRequest.toVenue())
         } catch (e: ReserveException) {
             throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.FAIL_TO_SAVE_DATA)
         }
-
     }
 
     @Transactional
-    fun deletePlace(placeId: Long) {
+    fun deleteVenue(venueId: Long) {
 
-        val place = placeRepository.findById(placeId)
+        val venue = venueRepository.findById(venueId)
             .orElseThrow { throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.PLACE_NOT_FOUND) }
 
         val now = LocalDateTime.now()
 
-        val deletablePlaces = place.screenInfoList.filter {
+        val deletableVenue = venue.screenInfoList.filter {
             it.endTime.isBefore(now)
         }
 
         // 남아 있는 screenInfo가 있으면 삭제 금지
-        if (place.screenInfoList.size != deletablePlaces.size) {
+        if (venue.screenInfoList.size != deletableVenue.size) {
             throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.CANNOT_DELETE_SOME_SCREENING_HAVE_NOT_YET_ENDED)
         }
 
-        placeRepository.delete(place)
-        log.info { "place 삭제 완료" }
+        venueRepository.delete(venue)
+        log.info { "venue 삭제 완료" }
     }
 
-    fun placeAllInfo(): List<PlaceResponse> {
-        return placeRepository.findAll().map { p ->
-            PlaceResponse(
+    fun venueList(): List<VenueResponse> {
+        return venueRepository.findAll().map { p ->
+            VenueResponse(
                 id = p.id,
                 name = p.name,
                 location = p.location

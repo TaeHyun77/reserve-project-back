@@ -33,7 +33,7 @@ class JwtFilter(
 
         try {
             if (jwtUtil.isExpired(accessToken)) {
-                throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.ACCESSTOKEN_ISEXPIRED)
+                throw ReserveException(HttpStatus.UNAUTHORIZED, ErrorCode.ACCESSTOKEN_ISEXPIRED)
             }
         } catch (e: ReserveException) {
             throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_TOKEN)

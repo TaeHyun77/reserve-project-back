@@ -1,6 +1,5 @@
 package com.example.kotlin.seat
 
-import com.example.kotlin.screenInfo.ScreenInfo
 import com.example.kotlin.screenInfo.ScreenInfoResponse
 
 data class SeatResponse(

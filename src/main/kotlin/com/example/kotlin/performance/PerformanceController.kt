@@ -21,33 +21,14 @@ class PerformanceController(
     }
 
     @DeleteMapping("/delete/{performanceId}")
-    fun deletePlace(@PathVariable("performanceId") performanceId: Long) {
+    fun deletePerformance(@PathVariable("performanceId") performanceId: Long) {
         performanceService.deletePerformance(performanceId)
 
     }
 
     @GetMapping("/list/{id}")
-    fun performanceList(@PathVariable("id") placeId: Long): List<PerformanceResponse> {
+    fun performanceList(@PathVariable("id") venueId: Long): List<PerformanceResponse> {
 
-        return performanceService.performanceList(placeId)
-    }
-}
-
-data class PerformanceRequest(
-    val type: String,
-
-    val title: String,
-
-    val duration: String,
-
-    val price: Long
-) {
-    fun toPerformance(): Performance {
-        return Performance (
-            type = this.type,
-            title = this.title,
-            duration = this.duration,
-            price = this.price
-        )
+        return performanceService.performanceList(venueId)
     }
 }

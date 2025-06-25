@@ -4,7 +4,6 @@ enum class ErrorCode (
     val errorCode: String,
     val message: String
 ){
-
     UNKNOWN("000_UNKNOWN", "알 수 없는 에러 발생"),
 
     ACCESSTOKEN_ISEXPIRED("ACCESSTOKEN_ISEXPIRED", "JWT 토큰 만료"),
@@ -44,6 +43,4 @@ enum class ErrorCode (
     INVALID_USERNAME("INVALID_USERNAME", "유효하지 않은 username 값 입니다."),
 
     DUPLICATED_USERNAME("DUPLICATED_USERNAME", "중복된 username 값 입니다.")
-
-
 }

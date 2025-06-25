@@ -10,7 +10,7 @@ data class SeatRequest(
 
     val is_reserved: Boolean? = false,
 
-    val placeId: Long? = null,
+    val venueId: Long? = null,
 
     val performanceId: Long? = null,
 

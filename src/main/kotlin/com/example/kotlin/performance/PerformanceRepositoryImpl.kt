@@ -8,13 +8,13 @@ class PerformanceRepositoryImpl(
 ): PerformanceRepositoryCustom {
 
     // 특정 영화관의 영화 목록 리스트 반환
-    override fun findPerformancesByPlaceId(placeId: Long): List<Performance> {
+    override fun findPerformancesByVenueId(venueId: Long): List<Performance> {
         val screenInfo = QScreenInfo.screenInfo
 
         return queryFactory
             .select(screenInfo.performance)
             .from(screenInfo)
-            .where(screenInfo.place.id.eq(placeId))
+            .where(screenInfo.venue.id.eq(venueId))
             .fetch()
     }
 }

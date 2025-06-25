@@ -6,7 +6,7 @@ class SeatRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ): SeatRepositoryCustom {
 
-    override fun findSeatByPlaceIdAndPerformanceId(screenInfoId: Long): List<Seat> {
+    override fun findSeatByPerformanceId(screenInfoId: Long): List<Seat> {
         val seat = QSeat.seat
 
         return queryFactory

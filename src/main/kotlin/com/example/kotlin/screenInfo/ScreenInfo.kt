@@ -1,7 +1,7 @@
 package com.example.kotlin.screenInfo
 
 import com.example.kotlin.performance.Performance
-import com.example.kotlin.place.Place
+import com.example.kotlin.venue.Venue
 import com.example.kotlin.seat.Seat
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
@@ -25,8 +25,8 @@ class ScreenInfo(
     val id: Long? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "place_id")
-    val place: Place,
+    @JoinColumn(name = "venue_id")
+    val venue: Venue,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "performance_id")
