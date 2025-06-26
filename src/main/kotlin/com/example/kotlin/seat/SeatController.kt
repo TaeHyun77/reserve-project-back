@@ -44,7 +44,7 @@ class SeatController(
     }
 
     @PostMapping("/reserve")
-    fun reserveSeats(@RequestBody seatsInfo: SeatRequest, request: HttpServletRequest): ResponseEntity<String> {
+    fun reserveSeats(@RequestBody reservationRequest: ReservationRequest, request: HttpServletRequest): ResponseEntity<String> {
 
         val token = parsingToken(request)
 
@@ -53,7 +53,7 @@ class SeatController(
 
         log.info { "idempotencyKey : $idempotencyKey" }
 
-        return seatService.reserveSeats(seatsInfo, token, idempotencyKey)
+        return seatService.reserveSeats(reservationRequest, token, idempotencyKey)
     }
 
     @DeleteMapping("/delete/{seatId}")

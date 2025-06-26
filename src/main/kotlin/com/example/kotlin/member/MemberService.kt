@@ -1,9 +1,9 @@
 package com.example.kotlin.member
 
+import com.example.kotlin.config.IdempotencyManager
 import com.example.kotlin.jwt.JwtUtil
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
-import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -15,7 +15,8 @@ import java.time.LocalDate
 class MemberService(
     private val memberRepository: MemberRepository,
     private val passwordEncoder: PasswordEncoder,
-    private val jwtUtil: JwtUtil
+    private val jwtUtil: JwtUtil,
+    private val idempotencyManager: IdempotencyManager
 ) {
 
     fun memberInfo(token: String): ResponseEntity<MemberResponse> {
@@ -31,7 +32,8 @@ class MemberService(
             name = member.name,
             role = member.role,
             email = member.email,
-            last_reward_date = member.last_reward_date
+            last_reward_date = member.last_reward_date,
+            reward = member.reward
         )
 
         return ResponseEntity.ok(result)
@@ -66,13 +68,25 @@ class MemberService(
         }
     }
 
-    @Transactional
-    fun setRewardDate(token: String, today: LocalDate): ResponseEntity<String> {
+    fun payRewardToday(token: String, today: LocalDate, idempotencyKey: String): ResponseEntity<String> {
 
         val username = jwtUtil.getUsername(token)
 
         val member = memberRepository.findByUsername(username)
             ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.MEMBER_NOT_FOUND)
+
+        return idempotencyManager.execute(
+            key = idempotencyKey,
+            url = "/member/reward",
+            method = "POST",
+            failResult = "리워드 지급이 실패되었습니다."
+        ) {
+            doPayRewardToday(member, today)
+        }
+    }
+
+    @Transactional
+    fun doPayRewardToday(member: Member, today: LocalDate): String {
 
         if (member.last_reward_date == null || member.last_reward_date != today) {
             member.last_reward_date = today
@@ -83,7 +97,7 @@ class MemberService(
 
         memberRepository.save(member)
 
-        return ResponseEntity.ok("ok")
+        return "이미 처리된 요청이거나, $today ${member.name}님에게 리워드가 지급되었습니다."
     }
 }
 
