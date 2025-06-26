@@ -14,5 +14,7 @@ data class MemberResponse(
 
     val email: String,
 
-    var last_reward_date: LocalDate?
+    var last_reward_date: LocalDate?,
+
+    val reward: Long
 )

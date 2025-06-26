@@ -1,7 +1,11 @@
 package com.example.kotlin.member
 
+import com.example.kotlin.config.Loggable
 import com.example.kotlin.config.parsingToken
+import com.example.kotlin.reserveException.ErrorCode
+import com.example.kotlin.reserveException.ReserveException
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -15,7 +19,7 @@ import java.time.LocalDate
 @RestController
 class MemberController(
     private val memberService: MemberService,
-) {
+): Loggable {
 
     // 로그인 사용자 정보 조회
     @GetMapping("/info")
@@ -40,12 +44,18 @@ class MemberController(
 
     // 하루 한 번 리워드 지급 로직
     @PostMapping("/reward/{today}")
-    fun setRewardDate(request: HttpServletRequest, @PathVariable("today") today: LocalDate): ResponseEntity<String> {
+    fun payRewardToday(request: HttpServletRequest, @PathVariable("today") today: LocalDate): ResponseEntity<String> {
 
         val token: String = parsingToken(request)
-        println("받은 날짜: $today")
 
-        return memberService.setRewardDate(token, today)
+        println("요청 받은 날짜: $today")
+
+        val idempotencyKey: String = request.getHeader("Idempotency-key")
+            ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_IN_HEADER_IDEMPOTENCY_KEY)
+
+        log.info { "idempotencyKey : $idempotencyKey" }
+
+        return memberService.payRewardToday(token, today, idempotencyKey)
     }
 }
 
