@@ -50,7 +50,7 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it
                     .requestMatchers(
-                        "/", "/member/**", "/venue/**", "/performance/**", "/screenInfo/**", "/seat/**"
+                        "/", "/member/**", "/venue/**", "/performance/**", "/screenInfo/**", "/seat/**", "/reToken"
                     ).permitAll()
                     .requestMatchers("/admin").hasRole("ADMIN")
                     .requestMatchers("/login", "/logout").permitAll()

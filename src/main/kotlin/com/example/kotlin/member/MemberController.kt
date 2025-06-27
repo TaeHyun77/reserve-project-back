@@ -44,7 +44,7 @@ class MemberController(
 
     // 하루 한 번 리워드 지급 로직
     @PostMapping("/reward/{today}")
-    fun payRewardToday(request: HttpServletRequest, @PathVariable("today") today: LocalDate): ResponseEntity<String> {
+    fun earnRewardToday(request: HttpServletRequest, @PathVariable("today") today: LocalDate): ResponseEntity<String> {
 
         val token: String = parsingToken(request)
 
@@ -55,7 +55,7 @@ class MemberController(
 
         log.info { "idempotencyKey : $idempotencyKey" }
 
-        return memberService.payRewardToday(token, today, idempotencyKey)
+        return memberService.earnRewardToday(token, today, idempotencyKey)
     }
 }
 

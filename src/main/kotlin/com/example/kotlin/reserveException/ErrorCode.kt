@@ -42,5 +42,7 @@ enum class ErrorCode (
 
     INVALID_USERNAME("INVALID_USERNAME", "유효하지 않은 username 값 입니다."),
 
-    DUPLICATED_USERNAME("DUPLICATED_USERNAME", "중복된 username 값 입니다.")
+    DUPLICATED_USERNAME("DUPLICATED_USERNAME", "중복된 username 값 입니다."),
+
+    REDIS_FAILED_TO_ACQUIRED_LOCK("REDIS_FAILED_TO_ACQUIRED_LOCK", "레디스에서 Lock을 획득 실패")
 }

@@ -4,9 +4,11 @@ import com.example.kotlin.config.IdempotencyManager
 import com.example.kotlin.config.Loggable
 import com.example.kotlin.idempotency.IdempotencyRepository
 import com.example.kotlin.jwt.JwtUtil
+import com.example.kotlin.member.Member
 import com.example.kotlin.member.MemberRepository
 import com.example.kotlin.performance.PerformanceRepository
 import com.example.kotlin.performance.PerformanceResponse
+import com.example.kotlin.redis.RedisLockUtil
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
 import com.example.kotlin.screenInfo.ScreenInfo
@@ -57,22 +59,28 @@ class SeatService(
     * 멱등성 로직을 활용한 예약 로직
     * */
     fun reserveSeats(reservationRequest: ReservationRequest, token: String, idempotencyKey: String): ResponseEntity<String> {
+
+        val username = jwtUtil.getUsername(token)
+
+        val member = memberRepository.findByUsername(username)
+            ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.MEMBER_NOT_FOUND)
+
         return idempotencyManager.execute(
             key = idempotencyKey,
             url = "/seat/reserve",
             method = "POST",
             failResult = "예약이 실패되었습니다."
         ) {
-            doReserveSeats(reservationRequest, token)
+            RedisLockUtil.acquireLockAndRun(
+                "${member.username}:${reservationRequest.screenInfoId}:doReserve"
+            ){
+                doReserveSeats(reservationRequest, member)
+            }
         }
     }
 
     @Transactional
-    fun doReserveSeats(request: ReservationRequest, token: String): String {
-        val username = jwtUtil.getUsername(token)
-
-        val member = memberRepository.findByUsername(username)
-            ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.MEMBER_NOT_FOUND)
+    fun doReserveSeats(request: ReservationRequest, member: Member): String {
 
         val screenInfo = screenInfoRepository.findById(request.screenInfoId)
             .orElseThrow { throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.SCREEN_INFO_NOT_FOUND) }
@@ -107,7 +115,7 @@ class SeatService(
         member.credit -= finalPrice
         memberRepository.save(member)
 
-        log.info { "예약 성공 - 사용자: $username, 좌석 수: $seatCount, 결제 금액: $finalPrice, 포인트 사용: $usedReward" }
+        log.info { "예약 성공 - 사용자: ${member.username}, 좌석 수: $seatCount, 총 가격: $totalPrice, 결제 금액: $finalPrice, 포인트 사용: $usedReward" }
         return "이미 처리된 요청이거나, 좌석 예약이 완료되었습니다."
     }
 
@@ -159,6 +167,5 @@ class SeatService(
             .orElseThrow { ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.SEAT_NOT_FOUND) }
 
         seatRepository.delete(deleteSeat)
-
     }
 }
