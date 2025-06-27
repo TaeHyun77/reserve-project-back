@@ -2,6 +2,7 @@ package com.example.kotlin.member
 
 import com.example.kotlin.config.IdempotencyManager
 import com.example.kotlin.jwt.JwtUtil
+import com.example.kotlin.redis.RedisLockUtil
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
 import org.springframework.http.HttpStatus
@@ -68,7 +69,7 @@ class MemberService(
         }
     }
 
-    fun payRewardToday(token: String, today: LocalDate, idempotencyKey: String): ResponseEntity<String> {
+    fun earnRewardToday(token: String, today: LocalDate, idempotencyKey: String): ResponseEntity<String> {
 
         val username = jwtUtil.getUsername(token)
 
@@ -81,7 +82,7 @@ class MemberService(
             method = "POST",
             failResult = "리워드 지급이 실패되었습니다."
         ) {
-            doPayRewardToday(member, today)
+            RedisLockUtil.acquireLockAndRun("${today}:${member.username}:earnReward"){doPayRewardToday(member, today)}
         }
     }
 

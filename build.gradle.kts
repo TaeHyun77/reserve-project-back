@@ -51,6 +51,10 @@ dependencies {
 	kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")
 	kapt("jakarta.annotation:jakarta.annotation-api")
 	kapt("jakarta.persistence:jakarta.persistence-api")
+
+	// redis
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
 }
 
 // querydsl QClass 위치
