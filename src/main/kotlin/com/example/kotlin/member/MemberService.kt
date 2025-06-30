@@ -1,6 +1,7 @@
 package com.example.kotlin.member
 
 import com.example.kotlin.config.IdempotencyManager
+import com.example.kotlin.config.Loggable
 import com.example.kotlin.jwt.JwtUtil
 import com.example.kotlin.redis.RedisLockUtil
 import com.example.kotlin.reserveException.ErrorCode
@@ -11,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
+import kotlin.math.log
 
 @Service
 class MemberService(
@@ -18,7 +20,7 @@ class MemberService(
     private val passwordEncoder: PasswordEncoder,
     private val jwtUtil: JwtUtil,
     private val idempotencyManager: IdempotencyManager
-) {
+): Loggable {
 
     fun memberInfo(token: String): ResponseEntity<MemberResponse> {
 
@@ -76,29 +78,43 @@ class MemberService(
         val member = memberRepository.findByUsername(username)
             ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.MEMBER_NOT_FOUND)
 
-        return idempotencyManager.execute(
-            key = idempotencyKey,
-            url = "/member/reward",
-            method = "POST",
-            failResult = "리워드 지급이 실패되었습니다."
-        ) {
-            RedisLockUtil.acquireLockAndRun("${today}:${member.username}:earnReward"){doPayRewardToday(member, today)}
+        return RedisLockUtil.acquireLockAndRun("${today}:${member.username}:earnReward") {
+            idempotencyManager.execute(
+                key = idempotencyKey,
+                url = "/member/reward",
+                method = "POST",
+            ) {
+                doPayRewardToday(member, today)
+            }
         }
     }
 
     @Transactional
     fun doPayRewardToday(member: Member, today: LocalDate): String {
 
-        if (member.last_reward_date == null || member.last_reward_date != today) {
-            member.last_reward_date = today
-            member.reward += 200
-        } else {
-            throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.REWARD_ALREADY_CLAIMED)
+        return try {
+            if (member.last_reward_date == null || member.last_reward_date != today) {
+                member.last_reward_date = today
+                member.reward += 200
+            } else {
+                throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.REWARD_ALREADY_CLAIMED)
+            }
+
+            log.info { "리워드 지급 성공 - $today ${member.username}님에게 리워드가 지급되었습니다." }
+            memberRepository.save(member)
+
+            return "이미 처리된 요청이거나, $today ${member.name}님에게 리워드가 지급되었습니다."
+        } catch (e: ReserveException) {
+
+
+            when(e.errorCode) {
+                ErrorCode.REWARD_ALREADY_CLAIMED -> "오늘 이미 리워드가 지급되었습니다."
+                ErrorCode.NOT_EXIST_IN_HEADER_IDEMPOTENCY_KEY -> "IDEMPOTENCY_KEY가 존재하지 않습니다."
+                else -> "리워드 지급에 실패하였습니다."
+            }.also {
+                log.info {"리워드 지급 실패 - 날짜 : ${today}, 사용자: ${member.username}, 원인: ${e.errorCode}"}
+            }
         }
-
-        memberRepository.save(member)
-
-        return "이미 처리된 요청이거나, $today ${member.name}님에게 리워드가 지급되었습니다."
     }
 }
 

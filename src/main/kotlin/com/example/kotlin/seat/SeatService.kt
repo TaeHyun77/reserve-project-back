@@ -26,7 +26,6 @@ class SeatService(
     private val memberRepository: MemberRepository,
     private val performanceRepository: PerformanceRepository,
     private val jwtUtil: JwtUtil,
-    private val idempotencyRepository: IdempotencyRepository,
     private val idempotencyManager: IdempotencyManager
     ): Loggable {
 
@@ -65,58 +64,67 @@ class SeatService(
         val member = memberRepository.findByUsername(username)
             ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.MEMBER_NOT_FOUND)
 
-        return idempotencyManager.execute(
-            key = idempotencyKey,
-            url = "/seat/reserve",
-            method = "POST",
-            failResult = "예약이 실패되었습니다."
-        ) {
-            RedisLockUtil.acquireLockAndRun(
-                "${member.username}:${reservationRequest.screenInfoId}:doReserve"
-            ){
-                doReserveSeats(reservationRequest, member)
+        return RedisLockUtil.acquireLockAndRun("${member.username}:${reservationRequest.screenInfoId}:doReserve")
+            { idempotencyManager.execute(
+                    key = idempotencyKey,
+                    url = "/seat/reserve",
+                    method = "POST",
+                ) { doReserveSeats(reservationRequest, member) }
             }
-        }
     }
 
     @Transactional
     fun doReserveSeats(request: ReservationRequest, member: Member): String {
 
-        val screenInfo = screenInfoRepository.findById(request.screenInfoId)
-            .orElseThrow { throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.SCREEN_INFO_NOT_FOUND) }
+        return try {
+            val screenInfo = screenInfoRepository.findById(request.screenInfoId)
+                .orElseThrow {
+                    log.info {"상영 정보 없음 - screenInfoId: ${request.screenInfoId}"}
+                    throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.SCREEN_INFO_NOT_FOUND)
+                }
 
-        val seatPrice = screenInfo.performance.price // 좌석 개당 가격
-        val seatCount = request.seats.size // 예약한 좌석의 수
-        val totalPrice = seatPrice * seatCount // 예약 총 가격
+            val seatPrice = screenInfo.performance.price
+            val seatCount = request.seats.size
+            val totalPrice = seatPrice * seatCount
+            val usedReward = request.usedReward
+            val finalPrice = totalPrice - usedReward
 
-        val usedReward = request.usedReward // 사용한 리워드
-        val finalPrice = totalPrice - usedReward // 총 가격 - 리워드
-
-        if (finalPrice > member.credit) {
-            throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_ENOUGH_CREDIT)
-        }
-
-        // 좌석 예약 처리
-        request.seats.forEach { seatNumber ->
-            val seat = seatRepository.findByScreenInfoAndSeatNumber(screenInfo.id, seatNumber)
-                ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.SEAT_NOT_FOUND)
-
-            if (seat.is_reserved == true) {
-                throw ReserveException(HttpStatus.CONFLICT, ErrorCode.SEAT_ALREADY_RESERVED)
+            if (finalPrice > member.credit) {
+                log.info {"잔액 부족 - 사용자: ${member.username}, 필요 금액: $finalPrice, 보유: ${member.credit}"}
+                throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_ENOUGH_CREDIT)
             }
 
-            seat.is_reserved = true
-            seat.member = member
-            seatRepository.save(seat)
+            request.seats.forEach { seatNumber ->
+                val seat = seatRepository.findByScreenInfoAndSeatNumber(screenInfo.id, seatNumber)
+                    ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.SEAT_NOT_FOUND)
+
+                if (seat.is_reserved == true) {
+                    log.info {"좌석 중복 예약 시도 - 사용자: ${member.username}, 좌석: $seatNumber"}
+                    throw ReserveException(HttpStatus.CONFLICT, ErrorCode.SEAT_ALREADY_RESERVED)
+                }
+
+                seat.updateReserveAndMember(true, member)
+                seatRepository.save(seat)
+            }
+
+            member.updateCreditAndReward(usedReward, finalPrice)
+            memberRepository.save(member)
+
+            log.info {"예약 성공 - 사용자: ${member.username}, 좌석 수: $seatCount, 총 가격: $totalPrice, 결제 금액: $finalPrice, 포인트 사용: $usedReward"}
+            "이미 처리된 요청이거나, 좌석 예약이 완료되었습니다."
+
+        } catch (e: ReserveException) {
+
+            when (e.errorCode) {
+                ErrorCode.NOT_ENOUGH_CREDIT -> "잔액이 부족하여 예약에 실패했습니다."
+                ErrorCode.SEAT_ALREADY_RESERVED -> "이미 예약된 좌석이 포함되어 있어 예약에 실패했습니다."
+                ErrorCode.SCREEN_INFO_NOT_FOUND -> "상영 정보를 찾을 수 없습니다."
+                ErrorCode.SEAT_NOT_FOUND -> "선택한 좌석 정보를 찾을 수 없습니다."
+                else -> "예약에 실패했습니다."
+            }.also {
+                log.info {"예약 실패 - 사용자: ${member.username}, 원인: ${e.errorCode}"}
+            }
         }
-
-        // 멤버 정보 업데이트
-        member.reward -= usedReward
-        member.credit -= finalPrice
-        memberRepository.save(member)
-
-        log.info { "예약 성공 - 사용자: ${member.username}, 좌석 수: $seatCount, 총 가격: $totalPrice, 결제 금액: $finalPrice, 포인트 사용: $usedReward" }
-        return "이미 처리된 요청이거나, 좌석 예약이 완료되었습니다."
     }
 
     /*

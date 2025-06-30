@@ -33,4 +33,10 @@ class Seat(
     val seatNumber: String?,
 
     var is_reserved: Boolean?
-)
+) {
+
+    fun updateReserveAndMember( is_reserved: Boolean, member: Member) {
+        this.is_reserved = is_reserved
+        this.member = member
+    }
+}

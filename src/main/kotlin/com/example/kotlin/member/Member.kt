@@ -30,4 +30,10 @@ class Member(
     var reward: Long,
 
     var last_reward_date: LocalDate? = null
-): BaseTime()
+): BaseTime() {
+
+    fun updateCreditAndReward(credit: Long, reward: Long) {
+        this.credit -= credit
+        this.reward -= reward
+    }
+}
