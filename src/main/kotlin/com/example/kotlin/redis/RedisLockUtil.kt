@@ -1,6 +1,5 @@
 package com.example.kotlin.redis
 
-import com.example.kotlin.config.Loggable
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
 import org.slf4j.LoggerFactory
@@ -31,9 +30,10 @@ class RedisLockUtil(
 
             if (key.isBlank()) {
                 log.error("[RedisLockError] key is blank")
-                return block.invoke()
+                return block()
             }
 
+            // lock 획득 시도
             val acquired = acquiredLock(key)
 
             return if (acquired) {
@@ -64,7 +64,7 @@ class RedisLockUtil(
         * */
         private fun <T> proceedWithLock(key: String, block: () -> T): T {
             return try {
-                block.invoke()
+                block()
             } catch (e: Exception) {
                 throw e
             } finally {

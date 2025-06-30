@@ -1,6 +1,5 @@
 package com.example.kotlin.redis
 
-import com.example.kotlin.config.Loggable
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
 import java.time.Duration
@@ -18,6 +17,7 @@ class LockManager(
     ): Boolean {
         val start = System.currentTimeMillis()
 
+        // 최대 3초까지 wait 하다가 lock을 얻지 못하면 false 반환
         while (System.currentTimeMillis() - start < maxWaitMillis) {
             val success = redisTemplate.opsForValue().setIfAbsent(key, "lock", Duration.ofSeconds(5)) == true
 
@@ -25,10 +25,10 @@ class LockManager(
                 return true // 락 획득 성공
             }
 
-            Thread.sleep(retryDelayMillis) // 기다렸다가 다시 시도 ( Blocking Polling )
+            Thread.sleep(retryDelayMillis) // 0.1초 기다렸다가 다시 시도 ( Blocking Polling )
         }
 
-        return false // 최대 대기 시간 초과
+        return false // 최대 대기 시간 초과된 것
     }
 
     fun unlock(key: String): Boolean = redisTemplate.delete(key)
