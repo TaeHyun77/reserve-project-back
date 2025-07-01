@@ -28,7 +28,7 @@ class PerformanceService(
     fun deletePerformance(performanceId: Long) {
 
         val performance = performanceRepository.findById(performanceId)
-            .orElseThrow { throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.PERFORMANCE_NOT_FOUND) }
+            .orElseThrow { throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_PERFORMANCE_INFO) }
 
         val now = LocalDateTime.now()
 

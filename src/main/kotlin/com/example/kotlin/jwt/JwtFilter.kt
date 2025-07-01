@@ -49,7 +49,7 @@ class JwtFilter(
         val member = memberRepository.findByUsername(username)
             ?: run {
                 log.warn { "회원 정보를 찾을 수 없습니다. username: $username" }
-                throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.MEMBER_NOT_FOUND)
+                throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_MEMBER_INFO)
             }
 
         val customUserDetails = CustomUserDetails(member)

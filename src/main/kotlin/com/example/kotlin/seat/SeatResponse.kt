@@ -7,5 +7,5 @@ data class SeatResponse(
 
     val is_reserved: Boolean?,
 
-    val screenInfo: ScreenInfoResponse,
-    )
+    val screenInfo: ScreenInfoResponse
+)

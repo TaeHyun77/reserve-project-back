@@ -26,7 +26,7 @@ class VenueService(
     fun deleteVenue(venueId: Long) {
 
         val venue = venueRepository.findById(venueId)
-            .orElseThrow { throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.PLACE_NOT_FOUND) }
+            .orElseThrow { throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_PLACE_INFO) }
 
         val now = LocalDateTime.now()
 

@@ -48,8 +48,6 @@ class MemberController(
 
         val token: String = parsingToken(request)
 
-        println("요청 받은 날짜: $today")
-
         val idempotencyKey: String = request.getHeader("Idempotency-key")
             ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_IN_HEADER_IDEMPOTENCY_KEY)
 

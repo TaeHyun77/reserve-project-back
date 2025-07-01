@@ -20,7 +20,7 @@ class CustomUserDetailService(
         val member = memberRepository.findByUsername(username)
             ?: run {
                 log.info { "$username 사용자를 찾을 수 없습니다." }
-                throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.MEMBER_NOT_FOUND)
+                throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_MEMBER_INFO)
             }
 
         log.info { "로그인 사용자: $username" }
