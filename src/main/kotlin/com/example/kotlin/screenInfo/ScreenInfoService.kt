@@ -22,10 +22,10 @@ class ScreenInfoService(
     fun registerScreen(screenInfoRequest: ScreenInfoRequest) {
 
         val venue: Venue = venueRepository.findById(screenInfoRequest.venueId)
-            .orElseThrow { throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.PLACE_NOT_FOUND) }
+            .orElseThrow { throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_PLACE_INFO) }
 
         val performance: Performance = performanceRepository.findById(screenInfoRequest.performanceId)
-            .orElseThrow { throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.PERFORMANCE_NOT_FOUND) }
+            .orElseThrow { throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_PERFORMANCE_INFO) }
 
         try {
             screenInfoRepository.save(screenInfoRequest.toScreen(venue, performance))
@@ -37,7 +37,7 @@ class ScreenInfoService(
     fun screenList(venueId: Long, performanceId: Long): List<ScreenInfoResponse> {
 
         val screenInfos = screenInfoRepository.findScreenInfoListByVenueIdAndPerformanceId(venueId, performanceId)
-            ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.SCREEN_INFO_NOT_FOUND)
+            ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_SCREEN_INFO)
 
         return screenInfos.map {
             val performance = PerformanceResponse(

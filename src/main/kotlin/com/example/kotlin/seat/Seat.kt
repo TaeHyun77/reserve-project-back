@@ -1,6 +1,7 @@
 package com.example.kotlin.seat
 
 import com.example.kotlin.member.Member
+import com.example.kotlin.reserveInfo.ReserveInfo
 import com.example.kotlin.screenInfo.ScreenInfo
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
@@ -26,17 +27,11 @@ class Seat(
     val screenInfo: ScreenInfo,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    var member: Member? = null,
+    @JoinColumn(name = "reserve_id")
+    var reserveInfo: ReserveInfo? = null,
 
     // 좌석은 A1 ~ A5 , B1 ~ B5 까지만 있다고 가정
     val seatNumber: String?,
 
     var is_reserved: Boolean?
-) {
-
-    fun updateReserveAndMember( is_reserved: Boolean, member: Member) {
-        this.is_reserved = is_reserved
-        this.member = member
-    }
-}
+)

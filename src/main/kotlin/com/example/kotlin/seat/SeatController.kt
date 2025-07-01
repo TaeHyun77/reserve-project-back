@@ -4,6 +4,7 @@ import com.example.kotlin.config.Loggable
 import com.example.kotlin.config.parsingToken
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
+import com.example.kotlin.reserveInfo.ReserveRequest
 import com.example.kotlin.screenInfo.ScreenInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
@@ -44,7 +45,7 @@ class SeatController(
     }
 
     @PostMapping("/reserve")
-    fun reserveSeats(@RequestBody reservationRequest: ReservationRequest, request: HttpServletRequest): ResponseEntity<String> {
+    fun reserveSeats(@RequestBody reserveRequest: ReserveRequest, request: HttpServletRequest): ResponseEntity<String> {
 
         val token = parsingToken(request)
 
@@ -53,7 +54,7 @@ class SeatController(
 
         log.info { "idempotencyKey : $idempotencyKey" }
 
-        return seatService.reserveSeats(reservationRequest, token, idempotencyKey)
+        return seatService.reserveSeats(reserveRequest, token, idempotencyKey)
     }
 
     @DeleteMapping("/delete/{seatId}")

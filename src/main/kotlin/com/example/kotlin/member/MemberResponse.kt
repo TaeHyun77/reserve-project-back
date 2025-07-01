@@ -1,6 +1,9 @@
 package com.example.kotlin.member
 
+import com.example.kotlin.reserveInfo.ReserveInfo
+import com.example.kotlin.reserveInfo.ReserveInfoResponse
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class MemberResponse(
 
@@ -16,5 +19,9 @@ data class MemberResponse(
 
     var last_reward_date: LocalDate?,
 
-    val reward: Long
+    val credit: Long,
+
+    val reward: Long,
+
+    val reserveList: List<ReserveInfoResponse>? = null
 )
