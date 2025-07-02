@@ -16,8 +16,8 @@ class PerformanceController(
 ): Loggable {
 
     @PostMapping("/register")
-    fun registerPerformance(@RequestBody performanceRequest: PerformanceRequest) {
-        performanceService.registerPerformance(performanceRequest)
+    fun registerPerformance(@RequestBody performanceRequest: PerformanceRequest): Performance {
+        return performanceService.registerPerformance(performanceRequest)
     }
 
     @DeleteMapping("/delete/{performanceId}")

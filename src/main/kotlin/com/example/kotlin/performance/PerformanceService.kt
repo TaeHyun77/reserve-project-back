@@ -16,8 +16,8 @@ class PerformanceService(
 ) {
 
     @Transactional
-    fun registerPerformance(performanceRequest: PerformanceRequest) {
-        try {
+    fun registerPerformance(performanceRequest: PerformanceRequest): Performance {
+        return try {
             performanceRepository.save(performanceRequest.toPerformance())
         } catch (e: ReserveException) {
             throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.FAIL_TO_SAVE_DATA)

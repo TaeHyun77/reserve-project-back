@@ -18,7 +18,9 @@ import kotlin.text.toRegex
 value class CheckUsername private constructor (val username: String) {
 
     companion object {
-        private val USERNAME_REGEX = Regex("^(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d@#%*^]+$")
+
+        // 브라우저가 # 이후는 프래그먼트로 간주하여 서버에 전달하지 않음, 따라서 #은 허용하면 안됨
+        private val USERNAME_REGEX = Regex("^(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d@*^]+$")
 
         // 직접 CheckUsername 인스턴스를 생성할 때 사용할 수 있는 invoke 오버로딩
         operator fun invoke(username: String): CheckUsername = CheckUsername(username)
