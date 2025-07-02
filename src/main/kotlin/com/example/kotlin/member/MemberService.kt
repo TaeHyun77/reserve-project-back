@@ -57,15 +57,15 @@ class MemberService(
     }
 
     @Transactional
-    fun saveMember(memberRequest: MemberRequest) {
+    fun saveMember(memberRequest: MemberRequest): Member {
 
-        val exists = memberRepository.existsByUsername(memberRequest.username)
+        return try {
+            val exists = memberRepository.existsByUsername(memberRequest.username)
 
-        if (exists) throw ReserveException(HttpStatus.CONFLICT, ErrorCode.DUPLICATED_USERNAME)
+            if (exists) throw ReserveException(HttpStatus.CONFLICT, ErrorCode.DUPLICATED_USERNAME)
 
-        val encodedPassword = passwordEncoder.encode(memberRequest.password)
+            val encodedPassword = passwordEncoder.encode(memberRequest.password)
 
-        try {
             memberRepository.save(memberRequest.toEntity(encodedPassword))
         } catch (e: ReserveException) {
             throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.FAIL_TO_SAVE_DATA)
@@ -74,14 +74,18 @@ class MemberService(
 
     fun checkUsername(username: CheckUsername): ResponseEntity<UsernameCheckResponse> {
 
-        val exists = memberRepository.existsByUsername(username)
+        try {
+            val exists = memberRepository.existsByUsername(username)
 
-        return if (exists) {
-            throw ReserveException(HttpStatus.CONFLICT, ErrorCode.DUPLICATED_USERNAME)
-        } else {
-            ResponseEntity.ok(
-                UsernameCheckResponse(true, "사용 가능한 아이디입니다.")
-            )
+            return if (exists) {
+                throw ReserveException(HttpStatus.CONFLICT, ErrorCode.DUPLICATED_USERNAME)
+            } else {
+                ResponseEntity.ok(
+                    UsernameCheckResponse(true, "사용 가능한 아이디입니다.")
+                )
+            }
+        } catch (e: ReserveException) {
+            throw e
         }
     }
 

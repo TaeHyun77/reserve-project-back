@@ -44,19 +44,6 @@ class SeatController(
         return seatService.seatList(screenInfoId)
     }
 
-    @PostMapping("/reserve")
-    fun reserveSeats(@RequestBody reserveRequest: ReserveRequest, request: HttpServletRequest): ResponseEntity<String> {
-
-        val token = parsingToken(request)
-
-        val idempotencyKey: String = request.getHeader("Idempotency-key")
-            ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_IN_HEADER_IDEMPOTENCY_KEY)
-
-        log.info { "idempotencyKey : $idempotencyKey" }
-
-        return seatService.reserveSeats(reserveRequest, token, idempotencyKey)
-    }
-
     @DeleteMapping("/delete/{seatId}")
     fun deleteSeat(@PathVariable("seatId") seatId: Long) {
         seatService.deleteSeat(seatId)

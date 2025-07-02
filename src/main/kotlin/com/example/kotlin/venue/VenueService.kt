@@ -14,8 +14,8 @@ class VenueService(
 ): Loggable {
 
     @Transactional
-    fun registerVenue(venueRequest: VenueRequest) {
-        try {
+    fun registerVenue(venueRequest: VenueRequest): Venue {
+        return try {
             venueRepository.save(venueRequest.toVenue())
         } catch (e: ReserveException) {
             throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.FAIL_TO_SAVE_DATA)
@@ -44,11 +44,11 @@ class VenueService(
     }
 
     fun venueList(): List<VenueResponse> {
-        return venueRepository.findAll().map { p ->
+        return venueRepository.findAll().map {
             VenueResponse(
-                id = p.id,
-                name = p.name,
-                location = p.location
+                id = it.id,
+                name = it.name,
+                location = it.location
             )
         }
     }

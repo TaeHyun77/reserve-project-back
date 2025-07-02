@@ -32,8 +32,8 @@ class MemberController(
 
     // 사용자 회원가입
     @PostMapping("/save")
-    fun saveMember(@RequestBody memberRequest: MemberRequest) {
-        memberService.saveMember(memberRequest)
+    fun saveMember(@RequestBody memberRequest: MemberRequest): Member {
+        return memberService.saveMember(memberRequest)
     }
 
     // 아이디 검증 로직

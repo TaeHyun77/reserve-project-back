@@ -15,8 +15,8 @@ class VenueController(
 ) {
 
     @PostMapping("/register")
-    fun registerVenue(@RequestBody venueRequest: VenueRequest) {
-        venueService.registerVenue(venueRequest)
+    fun registerVenue(@RequestBody venueRequest: VenueRequest): Venue {
+        return venueService.registerVenue(venueRequest)
     }
 
     @GetMapping("/list")
