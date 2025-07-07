@@ -55,13 +55,12 @@ class JwtUtil(
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).payload.expiration.before(Date())
     }
 
-    fun createToken(username: String, password: String, name: String, email: String, role: String, category: String, expired: Long): String {
+    fun createToken(username: String, name: String, email: String, role: String, category: String, expired: Long): String {
         val now = Date()
         val expiredDate = Date(now.time + expired)
 
         return Jwts.builder()
             .claim("username", username)
-            .claim("password", password)
             .claim("name", name)
             .claim("email", email)
             .claim("role", role)
