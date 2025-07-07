@@ -45,11 +45,9 @@ class ReissueService(
         val role = jwtUtil.getRole(refresh)
         val name = jwtUtil.getName(refresh)
         val email = jwtUtil.getEmail(refresh)
-        val password = jwtUtil.getPassword(refresh)
 
         val newAccess = jwtUtil.createToken(
             username = username,
-            password = password,
             name = name,
             email = email,
             role = role.name,
@@ -59,7 +57,6 @@ class ReissueService(
 
         val newRefresh = jwtUtil.createToken(
             username = username,
-            password = password,
             name = name,
             email = email,
             role = role.name,

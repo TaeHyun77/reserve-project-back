@@ -36,7 +36,7 @@ class ReserveService (
         val member = memberRepository.findByUsername(username)
             ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_MEMBER_INFO)
 
-        return RedisLockUtil.acquireLockAndRun("${member.username}:${reserveRequest.screenInfoId}:doReserve")
+        return RedisLockUtil.acquireLockAndRun("${reserveRequest.reservationNumber}:${reserveRequest.screenInfoId}:doReserve")
         { idempotencyManager.execute(
             key = idempotencyKey,
             url = "/seat/reserve",
@@ -63,6 +63,12 @@ class ReserveService (
                 throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_ENOUGH_CREDIT)
             }
 
+            // 좌석 예약 가능 검증
+            val seats = reserveRequest.seats.map { seatNumber ->
+                findAndValidateSeat(screenInfo.id, seatNumber, member)
+            }
+
+            // 모든 좌석이 예약 가능할 때 비용 차감
             member.updateCreditAndReward(finalPrice, rewardDiscount)
             memberRepository.save(member)
 
@@ -79,10 +85,7 @@ class ReserveService (
             )
             reserveRepository.save(reserveInfo)
 
-            reserveRequest.seats.forEach { seatNumber ->
-
-                val seat = findAndValidateSeat(screenInfo.id, seatNumber, member)
-
+            seats.forEach { seat ->
                 seat.is_reserved = true
                 seat.reserveInfo = reserveInfo
                 seatRepository.save(seat)
@@ -92,7 +95,6 @@ class ReserveService (
             "이미 처리된 요청이거나, 좌석 예약이 완료되었습니다."
 
         } catch (e: ReserveException) {
-
             log.info {"예약 실패 - 사용자: ${member.username}, 원인: ${e.errorCode}"}
             throw e
         }
@@ -110,6 +112,9 @@ class ReserveService (
         return seat
     }
 
+    /*
+    * 예약 취소 로직
+    * */
     fun deleteReserveInfo(reserveNumber: String, idempotencyKey: String): ResponseEntity<String> {
 
         val reserveInfo = reserveRepository.findByReservationNumber(reserveNumber)

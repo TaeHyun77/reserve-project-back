@@ -58,7 +58,7 @@ class SeatService(
     * */
     fun seatList(screenInfoId: Long): List<SeatResponse> {
         try {
-            val seats = seatRepository.findSeatByPerformanceId(screenInfoId)
+            val seats = seatRepository.findSeatByScreenInfoId(screenInfoId)
 
             return seats.map {
                 SeatResponse (
