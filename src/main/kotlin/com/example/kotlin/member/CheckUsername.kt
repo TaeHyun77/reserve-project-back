@@ -23,6 +23,7 @@ value class CheckUsername private constructor (val username: String) {
         private val USERNAME_REGEX = Regex("^(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d@*^]+$")
 
         // 직접 CheckUsername 인스턴스를 생성할 때 사용할 수 있는 invoke 오버로딩
+        // companion object 안에 operator fun invoke(...)를 정의하면 생성자 호출처럼 사용할 수 있음
         operator fun invoke(username: String): CheckUsername = CheckUsername(username)
     }
 
@@ -60,4 +61,14 @@ fun String.removeSpacesAndHyphens(): String {
 
 /*
 * companion object 내부에 invoke를 정의하면, 이 invoke 함수는 클래스 자체의 일부분으로 간주되어 private 생성자에 접근할 수 있음
+*
+* [ 흐름 ]
+*
+* CheckUsername(값)을 호출하면, 생성자가 private이므로 직접 생성할 수 없고, 대신 invoke 연산자를 통해 CheckUsername 인스턴스가 생성됩니다.
+*
+* 이 invoke 함수에서 전달된 값은 생성자로 전달되며, @JsonDeserialize(using = CheckUsernameDeserializer::class)에 의해커스텀 역직렬화가 수행됩니다.
+* 이 과정에서 removeSpacesAndHyphens()가 실행되어 불필요한 공백이나 특수 문자가 제거됩니다.
+*
+* 이후 init 블록에서 validateUsername() 함수가 호출되어, 사용자명이 유효한 형식인지 최종 검증됩니다.
+*
 * */

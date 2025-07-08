@@ -16,6 +16,8 @@ class UsernameCheckTest {
         "#Q123"
     ])
     fun `유효한 사용자명은 정상 생성`(input: String) {
+
+        // 자동으로 CheckUsername.invoke로 컴파일 됨
         val result = CheckUsername(input)
         println("성공: $result")
     }
