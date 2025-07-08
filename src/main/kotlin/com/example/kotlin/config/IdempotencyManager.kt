@@ -77,11 +77,11 @@ class IdempotencyManager(
                 )
             )
 
-            log.info{"멱등성 키 저장 (실패 요청) - key: $key, message: ${e.errorCode.name}"}
+            log.info{"멱등성 키 저장 (실패 요청) - key: $key, message: $errorCode"}
 
             return ResponseEntity
                 .status(e.status)
-                .body(e.errorCode.name)
+                .body(errorCode)
         }
     }
 }
