@@ -1,23 +1,14 @@
 package com.example.kotlin.seat
 
-import com.example.kotlin.config.IdempotencyManager
 import com.example.kotlin.config.Loggable
-import com.example.kotlin.jwt.JwtUtil
-import com.example.kotlin.member.Member
-import com.example.kotlin.member.MemberRepository
 import com.example.kotlin.performance.PerformanceRepository
 import com.example.kotlin.performance.PerformanceResponse
-import com.example.kotlin.redis.RedisLockUtil
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
-import com.example.kotlin.reserveInfo.ReserveInfo
-import com.example.kotlin.reserveInfo.ReserveRepository
-import com.example.kotlin.reserveInfo.ReserveRequest
 import com.example.kotlin.screenInfo.ScreenInfo
 import com.example.kotlin.screenInfo.ScreenInfoRepository
 import com.example.kotlin.screenInfo.ScreenInfoResponse
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

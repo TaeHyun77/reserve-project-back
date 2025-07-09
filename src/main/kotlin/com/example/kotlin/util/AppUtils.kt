@@ -1,4 +1,4 @@
-package com.example.kotlin.config
+package com.example.kotlin.util
 
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException

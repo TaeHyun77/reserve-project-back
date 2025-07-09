@@ -1,6 +1,6 @@
 package com.example.kotlin.refresh
 
-import com.example.kotlin.config.createCookie
+import com.example.kotlin.util.createCookie
 import com.example.kotlin.jwt.JwtUtil
 import io.jsonwebtoken.ExpiredJwtException
 import jakarta.servlet.http.HttpServletRequest

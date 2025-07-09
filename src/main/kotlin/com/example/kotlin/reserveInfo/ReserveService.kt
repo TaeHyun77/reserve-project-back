@@ -1,11 +1,11 @@
 package com.example.kotlin.reserveInfo
 
-import com.example.kotlin.config.IdempotencyManager
+import com.example.kotlin.idempotency.IdempotencyService
 import com.example.kotlin.config.Loggable
 import com.example.kotlin.jwt.JwtUtil
 import com.example.kotlin.member.Member
 import com.example.kotlin.member.MemberRepository
-import com.example.kotlin.redis.RedisLockUtil
+import com.example.kotlin.redis.lock.RedisLockUtil
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
 import com.example.kotlin.screenInfo.ScreenInfoRepository
@@ -22,7 +22,7 @@ class ReserveService (
     private val memberRepository: MemberRepository,
     private val seatRepository: SeatRepository,
     private val screenInfoRepository: ScreenInfoRepository,
-    private val idempotencyManager: IdempotencyManager,
+    private val idempotencyService: IdempotencyService,
     private val jwtUtil: JwtUtil,
 ): Loggable {
 
@@ -37,7 +37,7 @@ class ReserveService (
             ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_MEMBER_INFO)
 
         return RedisLockUtil.acquireLockAndRun("${reserveRequest.reservationNumber}:${reserveRequest.screenInfoId}:doReserve")
-        { idempotencyManager.execute(
+        { idempotencyService.execute(
             key = idempotencyKey,
             url = "/seat/reserve",
             method = "POST",
@@ -124,7 +124,7 @@ class ReserveService (
             ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_MEMBER_INFO)
 
         return RedisLockUtil.acquireLockAndRun("${member.username}:${reserveNumber}:doDelete") {
-            idempotencyManager.execute(
+            idempotencyService.execute(
                 key = idempotencyKey,
                 url = "/reserve/delete",
                 method = "DELETE"

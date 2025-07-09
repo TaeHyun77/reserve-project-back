@@ -1,15 +1,7 @@
 package com.example.kotlin.seat
 
 import com.example.kotlin.config.Loggable
-import com.example.kotlin.config.parsingToken
-import com.example.kotlin.reserveException.ErrorCode
-import com.example.kotlin.reserveException.ReserveException
-import com.example.kotlin.reserveInfo.ReserveRequest
-import com.example.kotlin.screenInfo.ScreenInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.servlet.http.HttpServletRequest
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable

@@ -1,6 +1,6 @@
 package com.example.kotlin.jwt
 
-import com.example.kotlin.config.createCookie
+import com.example.kotlin.util.createCookie
 import com.example.kotlin.refresh.Refresh
 import com.example.kotlin.refresh.RefreshRepository
 import io.github.oshai.kotlinlogging.KotlinLogging

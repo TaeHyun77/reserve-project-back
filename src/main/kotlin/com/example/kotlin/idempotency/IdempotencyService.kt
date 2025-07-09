@@ -1,15 +1,13 @@
-package com.example.kotlin.config
+package com.example.kotlin.idempotency
 
-import com.example.kotlin.idempotency.Idempotency
-import com.example.kotlin.idempotency.IdempotencyRepository
-import com.example.kotlin.idempotency.IdempotencyResponse
+import com.example.kotlin.config.Loggable
 import com.example.kotlin.reserveException.ReserveException
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
 @Component
-class IdempotencyManager(
+class IdempotencyService(
     private val idempotencyRepository: IdempotencyRepository,
 ): Loggable {
 

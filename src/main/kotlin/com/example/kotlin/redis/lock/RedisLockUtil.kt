@@ -1,4 +1,4 @@
-package com.example.kotlin.redis
+package com.example.kotlin.redis.lock
 
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
