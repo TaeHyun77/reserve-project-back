@@ -1,4 +1,4 @@
-package com.example.kotlin.config
+package com.example.kotlin.redis.lock.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean

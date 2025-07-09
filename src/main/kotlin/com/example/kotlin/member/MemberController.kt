@@ -1,7 +1,7 @@
 package com.example.kotlin.member
 
 import com.example.kotlin.config.Loggable
-import com.example.kotlin.config.parsingToken
+import com.example.kotlin.util.parsingToken
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
 import jakarta.servlet.http.HttpServletRequest

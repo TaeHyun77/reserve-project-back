@@ -6,7 +6,6 @@ import com.example.kotlin.member.MemberService
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
 import org.assertj.core.api.BDDAssertions.then
-import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
@@ -14,7 +13,6 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 @SpringBootTest
 class RewardTest {
@@ -60,4 +58,3 @@ class RewardTest {
         assertEquals(200, member.reward)
     }
 }
-

@@ -1,9 +1,9 @@
 package com.example.kotlin.member
 
-import com.example.kotlin.config.IdempotencyManager
+import com.example.kotlin.idempotency.IdempotencyService
 import com.example.kotlin.config.Loggable
 import com.example.kotlin.jwt.JwtUtil
-import com.example.kotlin.redis.RedisLockUtil
+import com.example.kotlin.redis.lock.RedisLockUtil
 import com.example.kotlin.reserveException.ErrorCode
 import com.example.kotlin.reserveException.ReserveException
 import com.example.kotlin.reserveInfo.ReserveInfoResponse
@@ -13,14 +13,13 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
-import kotlin.math.log
 
 @Service
 class MemberService(
     private val memberRepository: MemberRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtUtil: JwtUtil,
-    private val idempotencyManager: IdempotencyManager
+    private val idempotencyService: IdempotencyService
 ): Loggable {
 
     fun memberInfo(token: String): ResponseEntity<MemberResponse> {
@@ -97,7 +96,7 @@ class MemberService(
             ?: throw ReserveException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXIST_MEMBER_INFO)
 
         return RedisLockUtil.acquireLockAndRun("${today}:${member.username}:earnReward") {
-            idempotencyManager.execute(
+            idempotencyService.execute(
                 key = idempotencyKey,
                 url = "/member/reward",
                 method = "POST",
