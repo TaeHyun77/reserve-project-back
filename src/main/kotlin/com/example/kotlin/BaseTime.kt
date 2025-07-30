@@ -16,4 +16,6 @@ abstract class BaseTime {
 
     @LastModifiedDate
     var modifiedAt: LocalDateTime? = null
+
+    // 변경 테스트트트트트
 }
