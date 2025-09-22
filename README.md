@@ -43,6 +43,7 @@ Mutex Lock은 지정한 최대 대기 시간 내에 지속적으로 락을 획�
 ---
 
 https://velog.io/@ayeah77/%EB%B6%84%EC%82%B0%EB%9D%BD-%EA%B5%AC%ED%98%84%EA%B3%BC-%ED%85%8C%EC%8A%A4%ED%8A%B8
+<br><br>
 
 이번 좌석 예약 로직에는 멱등성을 보장하기 위한 API 처리와, 동시성 문제를 해결하기 위한 Redis 기반의 뮤텍스락 로직을 구현하였습니다.
 
