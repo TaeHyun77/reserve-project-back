@@ -89,7 +89,7 @@ https://velog.io/@ayeah77/%EB%B6%84%EC%82%B0%EB%9D%BD-%EA%B5%AC%ED%98%84%EA%B3%B
 
 - 동시에 동일한 실패 예약 요청이 세 번 이상 온 경우 ( 에러 발생 )
 
-    **❌ 여러 개의 동시 요청 중 멱등 키 중복 저장 오류가 발생 ❌	**
+    **❌ 여러 개의 동시 요청 중 멱등 키 중복 저장 오류가 발생 ❌**<br><br>
     ![](https://velog.velcdn.com/images/ayeah77/post/2a0d522f-6e43-4b8c-a70b-29019baf5f62/image.png)
   <br><br>
 
