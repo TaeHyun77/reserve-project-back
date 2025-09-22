@@ -1,7 +1,3 @@
-### 예매 프로젝트입니다.
-
-<br><br>
-
 <p align="center">
   <img width="500" height="500" alt="Image" src="https://github.com/user-attachments/assets/ce06ebfe-b6f2-405f-a658-49ba16a6bdfd" />
 </p>
