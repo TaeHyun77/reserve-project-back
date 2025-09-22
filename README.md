@@ -1,4 +1,4 @@
-# 예매 시스템입니다.
+### 예매 프로젝트입니다.
 
 테스트<br>
 https://velog.io/@ayeah77/%EB%B6%84%EC%82%B0%EB%9D%BD-%EA%B5%AC%ED%98%84%EA%B3%BC-%ED%85%8C%EC%8A%A4%ED%8A%B8<br><br>
