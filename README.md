@@ -104,5 +104,6 @@ https://velog.io/@ayeah77/%EB%B6%84%EC%82%B0%EB%9D%BD-%EA%B5%AC%ED%98%84%EA%B3%B
   6. `요청 B도 실패 응답을 가지고 멱등성 키 저장 시도 → 중복 키 예외( Duplicate Key ) 발생`<br><br>
 
   이 문제를 해결하려면, 예약 로직과 멱등 키 저장 로직을 하나의 흐름으로 묶어 Redis 분산 락의 적용 범위 안에서 함께 처리해야 합니다.<br><br>
-  
+
+  성공적으로 완료된 모습 !
   ![](https://velog.velcdn.com/images/ayeah77/post/b0601518-2732-4e6a-b610-6bf5941509e5/image.png)
