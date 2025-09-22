@@ -7,6 +7,14 @@
 <p>멱등성( Idempotency )을 기반으로 예약 및 취소, 리워드 지급 로직에서 API의 중복 호출로 인한 오류를 방지했습니다.</p>
 <p>동시성 문제가 발생할 수 있는 예약, 예약 취소, 리워드 지급 등의 핵심 로직에 Redis 분산 락 ( mutex )을 도입하여 충돌을 방지했습니다.</p><br><br>
 
+### 기술 스택
+---
+Backend : SpringBoot , Spring Data JPA, Kotlin
+
+Frontend : React, JavaScript
+
+Database/Cache : MySQL, Redis ( mutex 분산 락 )<br><br>
+
 ### 동시성 이슈
 
 ---
